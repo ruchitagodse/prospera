@@ -1,4 +1,4 @@
-export const navigation = [["Home", "home"], ["About", "studio"], ["Services", "services"], ["Work", "work"], ["Contact", "contact"]];
+export const navigation = [["Home", "home"], ["About", "studio"], ["Work", "work"], ["Contact", "contact"]];
 export const headline = ["No one cares", "about your business", "as much as"];
 export const serviceOfferings = [
   { number: "01", name: "Websites & online stores", outcome: "Make your business easier to find. And easier to choose.", description: "A clear, thoughtful home for your business online—built around what your visitors need to understand, explore, and do next.", includes: ["Business websites & landing pages", "Online stores & product pages", "Responsive layouts for mobile & desktop", "Enquiry forms & clear calls to action"], note: "For a new beginning, a better first impression, or a website your business has outgrown." },

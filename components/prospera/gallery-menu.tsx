@@ -3,16 +3,16 @@
 import { useLayoutEffect, useRef, type RefObject } from "react";
 import gsap from "gsap";
 
-export type PageId = "home" | "studio" | "services" | "work" | "contact";
+export type PageId = "home" | "studio" | "work" | "contact";
 export const pages: { id: PageId; label: string; href: string }[] = [
   { id: "home", label: "Home", href: "/" },
   { id: "studio", label: "About", href: "/about" },
-  { id: "services", label: "Services", href: "/services" },
   { id: "work", label: "Work", href: "/work" },
   { id: "contact", label: "Contact", href: "/contact" },
 ];
 
-function StaticPreview({ page }: { page: "work" | "contact" }) {
+function StaticPreview({ page }: { page: "studio" | "work" | "contact" }) {
+  if (page === "studio") return <div className="p-preview-static p-preview-about-image" role="img" aria-label="PROSPERA About page with floating gold discs"/>;
   if (page === "work") return <div className="p-preview-static p-preview-work p-preview-work-image" role="img" aria-label="PROSPERA selected work gallery preview"/>;
   return <div className="p-preview-static p-preview-contact"><div className="p-preview-static-head"><b>PROSPERA</b><span>04 / Contact</span></div><div className="p-preview-contact-copy"><small>Let’s make something</small><h2>Let’s build<br/><em>together.</em></h2><p>Tell us about your project<br/>and we’ll get in touch.</p></div><div className="p-preview-contact-form"><span>Client</span><span>Email</span><i/><i/><i/><button>Start a conversation ↗</button></div></div>;
 }
@@ -34,7 +34,7 @@ export function GalleryMenu({ source, active, snapshot, reduced, onSelect, onClo
     const copies: HTMLElement[] = [];
     const clonedPreviews: HTMLElement[] = [];
     for (const card of cards) {
-      if (card.dataset.page === "work" || card.dataset.page === "contact") {
+      if (card.dataset.page === "contact") {
         const preview = card.querySelector<HTMLElement>(".p-preview-static");
         if (preview) copies.push(preview);
         continue;
@@ -42,6 +42,11 @@ export function GalleryMenu({ source, active, snapshot, reduced, onSelect, onClo
       const copy = pageSource.cloneNode(true) as HTMLElement;
       copy.classList.add("p-preview-page");
       copy.dataset.page = card.dataset.page;
+      if (card.dataset.page === "work") {
+        copy.dataset.workView = "gallery";
+        copy.querySelector('.p-work-view')?.setAttribute('data-view','gallery');
+        copy.querySelector('.p-work-case')?.remove();
+      }
       // The contact experience is a fixed overlay, not page content. Keeping it
       // in the scaled navigation clones makes it escape every preview card.
       copy.querySelector("footer#contact")?.remove();
@@ -78,8 +83,9 @@ export function GalleryMenu({ source, active, snapshot, reduced, onSelect, onClo
     const size = () => {
       copies.forEach(copy => {
         const host = copy.parentElement!;
-        copy.style.width = `${innerWidth}px`;
-        const scale = host.clientWidth/innerWidth;
+        const previewWidth = Math.max(1280,innerWidth);
+        copy.style.width = `${previewWidth}px`;
+        const scale = host.clientWidth/previewWidth;
         copy.style.setProperty("--preview-height", `${host.clientHeight/scale}px`);
         copy.style.minHeight = `${host.clientHeight/scale}px`;
         copy.style.transform = `scale(${scale})`;
@@ -88,23 +94,49 @@ export function GalleryMenu({ source, active, snapshot, reduced, onSelect, onClo
     size();
     const observer = new ResizeObserver(size); observer.observe(track);
     let drag: { x: number; left: number; id: number } | null = null, dragged = false;
+    let targetScroll = track.scrollLeft, edgeFrame = 0, lastScrollTime = 0;
+    const stopEdgeScroll = () => {
+      if (edgeFrame) cancelAnimationFrame(edgeFrame);
+      edgeFrame = 0;
+      lastScrollTime = 0;
+      targetScroll = track.scrollLeft;
+    };
+    const animateEdgeScroll = (time: number) => {
+      const dt = lastScrollTime ? Math.min((time-lastScrollTime)/1000,.05) : 1/60;
+      lastScrollTime = time;
+      if (busy.current || drag) { stopEdgeScroll(); return; }
+      const difference = targetScroll-track.scrollLeft;
+      track.scrollLeft += difference*(1-Math.exp(-dt*7));
+      if (Math.abs(difference) > 1) edgeFrame = requestAnimationFrame(animateEdgeScroll);
+      else { track.scrollLeft = targetScroll; edgeFrame = 0; lastScrollTime = 0; }
+    };
+    const updateEdgeScroll = (event: PointerEvent) => {
+      if (reduced || event.pointerType !== "mouse" || drag || busy.current) return;
+      const bounds = track.getBoundingClientRect();
+      // Map the full pointer travel to the full gallery, with a small margin
+      // so the first and last tabs are reachable without touching the edges.
+      const progress = Math.max(0,Math.min(1,((event.clientX-bounds.left)/bounds.width-.07)/.86));
+      targetScroll = progress*Math.max(0,track.scrollWidth-track.clientWidth);
+      if (!edgeFrame) edgeFrame = requestAnimationFrame(animateEdgeScroll);
+    };
     const down = (event: PointerEvent) => {
       if (event.pointerType !== "mouse" || event.button !== 0 || busy.current) return;
-      dragged = false; drag = { x: event.clientX, left: track.scrollLeft, id: event.pointerId };
+      stopEdgeScroll(); dragged = false; drag = { x: event.clientX, left: track.scrollLeft, id: event.pointerId };
     };
     const move = (event: PointerEvent) => {
-      if (!drag) return;
+      if (!drag) { updateEdgeScroll(event); return; }
       if (Math.abs(event.clientX-drag.x)>6) { dragged = true; track.setPointerCapture(drag.id); }
       if (dragged) { event.preventDefault(); track.scrollLeft = drag.left-(event.clientX-drag.x); }
     };
     const up = () => { if (drag && track.hasPointerCapture(drag.id)) track.releasePointerCapture(drag.id); drag = null; };
     const click = (event: MouseEvent) => { if (dragged) { event.preventDefault(); event.stopPropagation(); dragged = false; } };
     const wheel = (event: WheelEvent) => {
+      stopEdgeScroll();
       if (busy.current || Math.abs(event.deltaY)<=Math.abs(event.deltaX)) return;
       event.preventDefault(); track.scrollLeft += event.deltaY*(event.deltaMode===1?16:1);
     };
     const nativeDrag = (event: DragEvent) => event.preventDefault();
-    track.addEventListener("pointerdown",down);track.addEventListener("pointermove",move);track.addEventListener("pointerup",up);track.addEventListener("pointercancel",up);
+    track.addEventListener("pointerdown",down);track.addEventListener("pointermove",move);track.addEventListener("pointerup",up);track.addEventListener("pointercancel",up);track.addEventListener("pointerleave",stopEdgeScroll);
     track.addEventListener("click",click,true);track.addEventListener("wheel",wheel,{passive:false});track.addEventListener("dragstart",nativeDrag);
     const duration = reduced ? 0 : .85;
     const bounds = activeCard.querySelector(".p-gallery-window")!.getBoundingClientRect();
@@ -133,17 +165,26 @@ export function GalleryMenu({ source, active, snapshot, reduced, onSelect, onClo
       busy.current = true;
       const selected = cards.find(card => card.dataset.page === page)!;
       selected.scrollIntoView({ behavior: "instant", block: "nearest", inline: "center" });
-      const box = selected.querySelector(".p-gallery-window")!.getBoundingClientRect();
-      const closing = flight(selected);
-      gsap.set(selected, { visibility: "hidden" });
-      gsap.to(cards.filter(card => card !== selected), { opacity: 0, y: 25, duration: duration*.35 });
-      gsap.to(element.querySelectorAll(".p-gallery-top,.p-gallery-caption"), { opacity: 0, duration: duration*.25 });
-      gsap.to(closing, { x: -box.left, y: -box.top, scaleX: innerWidth/box.width, scaleY: innerHeight/box.height, duration, ease: "power3.inOut", onComplete: () => { onSelect(page); element.close(); onClose(); } });
+      if(reduced){onSelect(page);element.close();onClose();return;}
+      const box=selected.querySelector('.p-gallery-window')!.getBoundingClientRect();
+      const circle=document.createElement('div');
+      circle.className='p-tab-gold-circle';circle.setAttribute('aria-hidden','true');
+      const x=box.left+box.width/2,y=box.top+box.height/2;
+      circle.style.clipPath=`circle(0px at ${x}px ${y}px)`;
+      element.append(circle);
+      const radius=Math.hypot(Math.max(x,innerWidth-x),Math.max(y,innerHeight-y));
+      const transition=gsap.timeline({onComplete:()=>circle.remove()});
+      transition.to(circle,{clipPath:`circle(${radius}px at ${x}px ${y}px)`,duration:.8,ease:'power3.inOut'},0);
+      transition.call(()=>{
+        (pageSource.closest('.prospera')??document.body).append(circle);
+        onSelect(page);element.close();onClose();
+      },[],.38);
+      transition.to(circle,{opacity:0,duration:.55,ease:'power2.out'},.25);
     };
     const escape = (event: Event) => { event.preventDefault(); finish.current(); };
     element.addEventListener("cancel", escape);
     return () => {
-      up();track.removeEventListener("pointerdown",down);track.removeEventListener("pointermove",move);track.removeEventListener("pointerup",up);track.removeEventListener("pointercancel",up);track.removeEventListener("click",click,true);track.removeEventListener("wheel",wheel);track.removeEventListener("dragstart",nativeDrag);
+      up();stopEdgeScroll();track.removeEventListener("pointerdown",down);track.removeEventListener("pointermove",move);track.removeEventListener("pointerup",up);track.removeEventListener("pointercancel",up);track.removeEventListener("pointerleave",stopEdgeScroll);track.removeEventListener("click",click,true);track.removeEventListener("wheel",wheel);track.removeEventListener("dragstart",nativeDrag);
       context.revert(); gsap.killTweensOf(cards); element.querySelectorAll(".p-gallery-flight").forEach(node=>{gsap.killTweensOf(node);node.remove();}); observer.disconnect(); element.removeEventListener("cancel",escape); element.close(); clonedPreviews.forEach(copy=>copy.remove());
     };
   }, [source, active, snapshot, reduced, onSelect, onClose]);
@@ -153,7 +194,7 @@ export function GalleryMenu({ source, active, snapshot, reduced, onSelect, onClo
     <div className="p-gallery-top"><span>PROSPERA <small>Explore PROSPERA</small></span><button type="button" onClick={()=>finish.current()} aria-label="Close navigation">Close ×</button></div>
     <div ref={rail} className="p-gallery-rail" data-lenis-prevent="true">
       {pages.map((page,index)=><a href={page.href} key={page.id} className="p-gallery-card" data-page={page.id} aria-label={`Open ${page.label}`} aria-current={active===page.id?"page":undefined} onClick={event=>{event.preventDefault();finish.current(page.id);}}>
-        <div className="p-gallery-window" aria-hidden="true">{page.id === "work" || page.id === "contact" ? <StaticPreview page={page.id}/> : null}</div>
+        <div className="p-gallery-window" aria-hidden="true"><div className="p-gallery-preview-header" data-dark={page.id === "work"}><b>PROSPERA</b><span>Digital studio<br/>Mumbai, India</span><small>{String(index+1).padStart(2,"0")} / {page.label}</small></div>{page.id === "contact" ? <StaticPreview page={page.id}/> : null}</div>
         <span className="p-gallery-caption"><small>0{index+1}</small>{page.label}<i>↗</i></span>
       </a>)}
     </div>

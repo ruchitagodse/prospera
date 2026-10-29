@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useId, useState } from "react";
+import { FormEvent, useId, useRef, useState } from "react";
 
 const scopes = [
   "Strategy & positioning",
@@ -26,6 +26,7 @@ export function ContactInquiry() {
   const [sent, setSent] = useState(false);
   const [missing, setMissing] = useState(false);
   const scopeId = useId();
+  const sheet=useRef<HTMLElement>(null);
 
   const toggleScope = (scope: string) => {
     setSelected((current) => current.includes(scope) ? current.filter((item) => item !== scope) : [...current, scope]);
@@ -38,7 +39,7 @@ export function ContactInquiry() {
     setSent(true);
   };
 
-  return <section className="p-inquiry" aria-labelledby="contact-title">
+  return <section ref={sheet} className="p-inquiry" aria-labelledby="contact-title" data-lenis-prevent="true">
     <div className="p-inquiry-panel">
     <div className="p-inquiry-top"><span className="p-inquiry-index">04 / Contact</span>
       <div className="p-inquiry-tabs" role="tablist" aria-label="Contact type">
@@ -78,7 +79,7 @@ export function ContactInquiry() {
         <button className="p-inquiry-submit" type="submit">Start the conversation <span>↗</span></button>
       </div>
     </form>}
-    <div className="p-footer-bottom"><span>PROSPERA Digital Solutions</span><span>Made with care in Mumbai.</span><a href="#home">Back to top ↑</a></div>
+    <div className="p-footer-bottom"><span>PROSPERA Digital Solutions</span><span>Made with care in Mumbai.</span><button type="button" onClick={()=>sheet.current?.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})}>Back to top ↑</button></div>
     </div>
   </section>;
 }

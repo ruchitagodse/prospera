@@ -1,79 +1,64 @@
 "use client";
-
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
+import "./about-discs.css";
 
-export function AboutSpotlight({ active, reduced }: { active: boolean; reduced: boolean }) {
-  const root = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const surface = root.current;
-    if (!active || !surface || reduced) return;
-    const light = { x: 60, y: 38, tx: 60, ty: 38, inside: false };
-    const move = (event: PointerEvent) => {
-      if (event.pointerType === "touch") return;
-      const bounds = surface.getBoundingClientRect();
-      light.tx = Math.max(0, Math.min(100, (event.clientX - bounds.left) / bounds.width * 100));
-      light.ty = Math.max(0, Math.min(100, (event.clientY - bounds.top) / bounds.height * 100));
-      light.inside = true;
-    };
-    const leave = () => { light.inside = false; };
-    const tick = (time: number, delta: number) => {
-      const bounds = surface.getBoundingClientRect();
-      if (document.hidden || surface.closest<HTMLElement>(".prospera")?.dataset.overlay === "true" || bounds.width === 0 || bounds.bottom < 0 || bounds.top > innerHeight) return;
-      if (!light.inside) { light.tx = 55 + Math.sin(time * .28) * 24; light.ty = 42 + Math.cos(time * .23) * 18; }
-      const follow = 1 - Math.exp(-Math.min(delta, 40) / 180);
-      light.x += (light.tx - light.x) * follow; light.y += (light.ty - light.y) * follow;
-      surface.style.setProperty("--light-x", `${light.x}%`);
-      surface.style.setProperty("--light-y", `${light.y}%`);
-      surface.style.setProperty("--shade-x", `${(50 - light.x) * .1}px`);
-      surface.style.setProperty("--shade-y", `${(50 - light.y) * .12 + 4}px`);
-      surface.querySelectorAll<HTMLElement>(".p-about-relief").forEach(relief => {
-        const outer = surface.getBoundingClientRect(), inner = relief.getBoundingClientRect();
-        relief.style.setProperty("--beam-x", `${light.x / 100 * outer.width - (inner.left - outer.left)}px`);
-        relief.style.setProperty("--beam-y", `${light.y / 100 * outer.height - (inner.top - outer.top)}px`);
-        const words = relief.querySelector<HTMLElement>(".p-relief-words");
-        if (words) {
-          const bounds = words.getBoundingClientRect();
-          words.style.setProperty("--beam-x", `${light.x / 100 * outer.width - (bounds.left - outer.left)}px`);
-          words.style.setProperty("--beam-y", `${light.y / 100 * outer.height - (bounds.top - outer.top)}px`);
-        }
-      });
-      surface.querySelectorAll<HTMLElement>(".p-about-scene-panel").forEach(panel => {
-        const card = panel.getBoundingClientRect();
-        panel.style.setProperty("--card-light-x", `${light.x / 100 * bounds.width - (card.left - bounds.left)}px`);
-        panel.style.setProperty("--card-light-y", `${light.y / 100 * bounds.height - (card.top - bounds.top)}px`);
-      });
-    };
-    surface.addEventListener("pointermove", move); surface.addEventListener("pointerleave", leave);
-    gsap.ticker.add(tick);
-    const tweens: gsap.core.Tween[] = [];
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting) return;
-        tweens.push(gsap.fromTo(entry.target, { y: 28, opacity: 0 }, { y: 0, opacity: 1, duration: .9, ease: "power2.out", clearProps: "transform,opacity" }));
-        observer.unobserve(entry.target);
-      });
-    }, { threshold: .12 });
-    const blocks = surface.querySelectorAll<HTMLElement>(".p-about-scene-panel");
-    blocks?.forEach(el => observer.observe(el));
-    return () => {
-      observer.disconnect(); tweens.forEach(tween => tween.kill());
-      blocks?.forEach(el => { el.style.removeProperty("transform"); el.style.removeProperty("opacity"); });
-      gsap.ticker.remove(tick); surface.removeEventListener("pointermove", move); surface.removeEventListener("pointerleave", leave);
-      ["--light-x", "--light-y", "--shade-x", "--shade-y"].forEach(name => surface.style.removeProperty(name));
-      surface.querySelectorAll<HTMLElement>(".p-about-relief,.p-relief-words").forEach(el => { el.style.removeProperty("--beam-x"); el.style.removeProperty("--beam-y"); });
-      surface.querySelectorAll<HTMLElement>(".p-about-scene-panel").forEach(el => { el.style.removeProperty("--card-light-x"); el.style.removeProperty("--card-light-y"); });
-    };
-  }, [active, reduced]);
-
-  return <div className="p-about-light p-about-scene-stage" ref={root}>
-    <div className="p-about-scene-top"><span className="p-section-label">02 / ABOUT PROSPERA</span><span>MUMBAI, INDIA</span></div>
-    <div className="p-about-scene-intro"><h1 tabIndex={-1}>A little care.<br/><em>A lot of possibility.</em></h1><a href="#contact">Let’s talk <span>↗</span></a></div>
-    <div className="p-about-scene-trio" id="about-purpose">
-      <section className="p-about-scene-panel"><div className="p-about-relief p-purpose-sculpture" aria-hidden="true"><svg viewBox="0 0 320 300" fill="none"><path d="M15 55C160 55 105 150 215 150M15 150H215M15 245C160 245 105 150 215 150"/><path className="p-scene-arrow" d="M215 150H305m-22-22 22 22-22 22"/><circle cx="215" cy="150" r="10"/></svg></div><div className="p-scene-panel-copy"><span>01 / THE PURPOSE</span><h2>Less friction.</h2><p>Making the digital side<br/>of business easier.</p></div></section>
-      <section className="p-about-scene-panel p-about-scene-vision"><div className="p-about-relief p-vision-sculpture"><div className="p-relief-words" aria-label="Build. Grow. Prosper."><span>Build.</span><span>Grow.</span><span>Prosper.</span></div></div><div className="p-scene-panel-copy"><span>02 / THE VISION</span><h2>Room to grow.</h2><p>A strong start.<br/>A lasting difference.</p></div></section>
-      <section className="p-about-scene-panel"><div className="p-about-relief p-person-sculpture" aria-hidden="true"><div className="p-scene-ring"/><div className="p-relief-words"><span>RG</span></div></div><div className="p-scene-panel-copy"><span>03 / THE PERSON</span><h2>Ruchita Godse</h2><p>Founder · PROSPERA<br/>Personal by design.</p></div></section>
-    </div>
-    <div className="p-about-scene-bottom"><span>DIGITAL STUDIO</span><span>CLARITY. CARE. A WAY FORWARD.</span></div>
-  </div>;
+const stories=[
+{label:"The purpose",title:"Less complexity.",body:"We simplify the way businesses work through custom software, CRM systems, apps, and automation — making data, operations, and everyday tasks easier to manage."},
+{label:"The vision",title:"Room to prosper.",body:"We bring technology and creativity together — from websites and SaaS products to distinctive branding, brochures, and original creatives that keep businesses recognised and remembered."},
+{label:"The person",title:"Ruchita Godse",body:"Driven by the belief that every business deserves thoughtful design, practical technology, and the opportunity to prosper."}
+];
+export function AboutSpotlight({active,reduced}:{active:boolean;reduced:boolean}){
+ const [selected,setSelected]=useState(0);
+ const root=useRef<HTMLDivElement>(null);
+ const pointer=useRef({x:50,y:40,last:0});
+ const swipe=useRef<number|null>(null);
+ const select=(i:number)=>setSelected((i+3)%3);
+ useEffect(()=>{
+  if(!active||reduced||!root.current)return;
+  const element=root.current;
+  let x=50,y=40;
+  const tick=(time:number,delta:number)=>{
+   if(document.hidden||element.closest<HTMLElement>('.prospera')?.dataset.overlay==='true')return;
+   const idle=performance.now()-pointer.current.last>1600;
+   const f=1-Math.exp(-Math.min(delta,40)/180);
+   x+=((idle?50+Math.sin(time*.28)*44:pointer.current.x)-x)*f;
+   y+=((idle?40+Math.cos(time*.28)*12:pointer.current.y)-y)*f;
+   element.style.setProperty('--light-x',x+'%');element.style.setProperty('--light-y',y+'%');
+   const outer=element.getBoundingClientRect();
+   element.querySelectorAll<HTMLElement>('.p-about-disc').forEach(disc=>{
+    const box=disc.getBoundingClientRect();
+    disc.style.setProperty('--spot-x',outer.width*x/100-(box.left-outer.left)+'px');
+    disc.style.setProperty('--spot-y',outer.height*y/100-(box.top-outer.top)+'px');
+    disc.style.setProperty('--shade',(50-x)*.12+'px');
+   });
+  };
+  gsap.ticker.add(tick);return()=>{gsap.ticker.remove(tick);};
+ },[active,reduced]);
+ const story=stories[selected];
+ return <div className="p-about-discs" ref={root} data-reduced={reduced} onPointerMove={e=>{
+  if(e.pointerType==='touch')return;const b=e.currentTarget.getBoundingClientRect();
+  pointer.current={x:(e.clientX-b.left)/b.width*100,y:(e.clientY-b.top)/b.height*100,last:performance.now()};
+ }}>
+ <div className="p-discs-top"><span>02 / About PROSPERA</span><span>Three sides of the studio</span></div>
+ <div className="p-discs-layout">
+ <div className="p-discs-story" key={selected} id="about-story" role="tabpanel" aria-labelledby={'disc-'+selected}>
+ <span className="p-discs-eyebrow">0{selected+1} / {story.label}</span><div className="p-discs-heading-float"><h1 tabIndex={-1}>{story.title}</h1></div>
+ {selected===2&&<span className="p-discs-role">Founder · PROSPERA</span>}
+ <p>{story.body}</p>
+ <div className="p-discs-controls"><button type="button" onClick={()=>select(selected-1)} aria-label="Previous story">←</button><span>0{selected+1} / 03</span><button type="button" onClick={()=>select(selected+1)} aria-label="Next story">→</button></div>
+ </div>
+ <div className="p-discs-gallery" role="tablist" aria-label="Explore the studio" onKeyDown={e=>{
+ if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();const next=(selected+(e.key==='ArrowRight'?1:2))%3;select(next);root.current?.querySelector<HTMLButtonElement>('#disc-'+next)?.focus();}
+ }} onTouchStart={e=>{swipe.current=e.touches[0].clientX;}} onTouchEnd={e=>{
+ if(swipe.current!==null){const d=e.changedTouches[0].clientX-swipe.current;if(Math.abs(d)>45)select(selected+(d<0?1:-1));}swipe.current=null;
+ }}>
+ {stories.map((item,i)=><button type="button" key={item.label} id={'disc-'+i} className="p-about-disc" data-position={(i-selected+3)%3} role="tab" aria-selected={selected===i} aria-controls="about-story" aria-label={item.label+': '+item.title} tabIndex={selected===i?0:-1} onClick={()=>select(i)}>
+ <span className="p-disc-face"><span className="p-disc-rim">PROSPERA — {item.label}</span>
+ {i===0?<svg viewBox="0 0 240 240" fill="none" aria-hidden="true"><path d="M25 55C110 55 70 120 155 120M25 120H205M25 185C110 185 70 120 155 120M175 90l30 30-30 30"/><circle cx="155" cy="120" r="7"/></svg>:i===1?<span className="p-disc-words" aria-hidden="true">Build.<br/>Grow.<br/><em>Prosper.</em></span>:<span className="p-disc-monogram" aria-hidden="true">RG</span>}
+ <span className="p-disc-note">0{i+1} / {i===0?'Simplify the everyday':i===1?'Room to prosper':'Personal by design'}</span></span></button>)}
+ </div></div>
+ <div className="p-discs-wave" aria-hidden="true"><svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path d="M0 45Q180 5 360 40T720 40T1080 40T1440 45V80H0Z"/></svg><svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path d="M0 50Q180 15 360 45T720 45T1080 45T1440 50V80H0Z"/></svg></div>
+ <div className="p-discs-bottom"><span>Mumbai, India</span><span>Click a disc to explore ↗</span><a href="#contact">Let’s talk ↗</a></div>
+ </div>;
 }

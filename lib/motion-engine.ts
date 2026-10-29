@@ -2,11 +2,13 @@ import gsap from "gsap";
 import Lenis from "lenis";
 import { motion } from "@/config/motion";
 import { createPointerTrail } from "@/lib/pointer-trail";
+import { createHeroAtmosphere } from "@/lib/hero-atmosphere";
 
 export type Frame = { time: number; dt: number; x: number; y: number; wind: number; scroll: number };
 export function startMotion(root: HTMLElement, render?: (frame: Frame) => void) {
   const fine = matchMedia("(hover: hover) and (pointer: fine)").matches;
   const trail = fine ? createPointerTrail(root) : null;
+  const atmosphere = createHeroAtmosphere(root);
   const lenis = new Lenis({ lerp: motion.scrollLerp });
   const pointer = { x: innerWidth / 2, y: innerHeight / 2, sx: innerWidth / 2, sy: innerHeight / 2, lastX: innerWidth / 2, vx: 0 };
   const frame: Frame = { time: 0, dt: 0, x: 0, y: 0, wind: 0, scroll: 0 };
@@ -15,6 +17,20 @@ export function startMotion(root: HTMLElement, render?: (frame: Frame) => void) 
   const mark = root.querySelector<HTMLElement>(".p-sculpture");
   const letters = Array.from(root.querySelectorAll<HTMLElement>(".p-letter"));
   const letterStates = letters.map(el => ({ el, cx: 0, cy: 0, x: 0, y: 0, vx: 0, vy: 0, angle: 0 }));
+  const textStates=new Map<HTMLElement,{y:number;angle:number}>();
+  const collectText=()=>{
+    for(const el of textStates.keys()) if(!root.contains(el)) textStates.delete(el);
+    root.querySelectorAll<HTMLElement>('h1,h2,h3,p,a,button,label,small,span').forEach(el=>{
+      if(el.closest('.p-loader,.p-preview-page,.p-preview-static,.p-gallery-card,svg,[aria-hidden="true"],.p-sr-only,.p-word,.p-letter,.p-relief-words')) return;
+      if(el.querySelector('.p-letter') || !el.textContent?.trim()) return;
+      // Animate the smallest text surface only, so nested controls never double up.
+      if(el.querySelector('h1,h2,h3,p,a,button,label,small,span')) return;
+      if(!textStates.has(el)) textStates.set(el,{y:0,angle:0});
+    });
+  };
+  collectText();
+  const contentObserver=new MutationObserver(collectText);
+  contentObserver.observe(root,{childList:true,subtree:true});
   const title = root.querySelector<HTMLElement>(".p-hero h1");
   let letterAmplitude = 8;
   const measureLetters = () => {
@@ -25,6 +41,9 @@ export function startMotion(root: HTMLElement, render?: (frame: Frame) => void) 
   };
   const textObserver = new ResizeObserver(measureLetters); if (title) textObserver.observe(title);
   measureLetters();
+  const refreshLetters=()=>{requestAnimationFrame(measureLetters);};
+  window.addEventListener('prospera:navigate',refreshLetters);
+  root.querySelectorAll('.p-scene-panel-copy h2').forEach(el=>textObserver.observe(el));
   let pointerSeen = false, lastPointerY = pointer.y, pointerSpeed = 0;
   const leave = () => { pointerSeen = false; pointerSpeed = 0; };
   let wasOpening = root.dataset.intro !== "complete";
@@ -64,7 +83,24 @@ export function startMotion(root: HTMLElement, render?: (frame: Frame) => void) 
       state.angle+=(strength*Math.sin(dx*.018-time*2)*3-state.angle)*(1-Math.exp(-dt*10));
       state.el.style.transform=`translate3d(${state.x.toFixed(2)}px,${state.y.toFixed(2)}px,0) rotate(${state.angle.toFixed(2)}deg) skewX(${(strength*frame.wind*.7).toFixed(2)}deg)`;
     });
+    if(fine && root.dataset.intro==='complete') textStates.forEach((state,el)=>{
+      const rect=el.getBoundingClientRect();
+      if(!rect.width || rect.bottom<0 || rect.top>innerHeight) return;
+      const dx=rect.left+rect.width*.5-pointer.x;
+      const dy=rect.top+rect.height*.5-pointer.y;
+      const reach=Math.max(120,Math.min(240,rect.width*.5));
+      const influence=pointerSeen?Math.exp(-(dx*dx+dy*dy)/(reach*reach)):0;
+      const size=parseFloat(getComputedStyle(el).fontSize)||16;
+      const amplitude=Math.min(5,Math.max(1.2,size*.06));
+      const strength=influence*Math.min(1.2,.25+pointerSpeed/1000);
+      const follow=1-Math.exp(-frame.dt*10);
+      state.y+=(Math.sin(dx*.024-time*3.2)*strength*amplitude-state.y)*follow;
+      state.angle+=(Math.sin(dx*.018-time*2)*strength*.7-state.angle)*follow;
+      el.style.translate=`0 ${state.y.toFixed(2)}px`;
+      el.style.rotate=`${state.angle.toFixed(2)}deg`;
+    });
     render?.(frame);
+    atmosphere?.render(time, frame.dt);
     trail?.render(frame.dt,frame.wind);
   };
   const magnets = fine ? Array.from(root.querySelectorAll<HTMLElement>("[data-magnetic]")).map((el) => {
@@ -80,8 +116,11 @@ export function startMotion(root: HTMLElement, render?: (frame: Frame) => void) 
   window.addEventListener("blur",leave); document.addEventListener("pointerleave",leave);
   gsap.ticker.lagSmoothing(0); gsap.ticker.add(tick);
   return () => {
-    gsap.ticker.remove(tick); lenis.destroy(); trail?.dispose(); textObserver.disconnect(); window.removeEventListener("pointermove",move); document.removeEventListener("visibilitychange",visibility);
+    gsap.ticker.remove(tick); lenis.destroy(); trail?.dispose(); atmosphere?.dispose(); textObserver.disconnect(); window.removeEventListener("pointermove",move); document.removeEventListener("visibilitychange",visibility);
     window.removeEventListener("blur",leave); document.removeEventListener("pointerleave",leave);
     magnets.forEach((dispose) => dispose()); letters.forEach((letter) => letter.style.removeProperty("transform")); mark?.style.removeProperty("transform");
+    window.removeEventListener('prospera:navigate',refreshLetters);
+    contentObserver.disconnect();
+    textStates.forEach((_,el)=>{el.style.removeProperty('translate');el.style.removeProperty('rotate');});
   };
 }

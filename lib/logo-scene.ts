@@ -34,8 +34,8 @@ export function createScene(root: HTMLElement) {
         for(let i=0;i<positions.count;i+=3){
           if(normals.getZ(i)<.9)continue;
           const a=new THREE.Vector3().fromBufferAttribute(positions,i),b=new THREE.Vector3().fromBufferAttribute(positions,i+1),c=new THREE.Vector3().fromBufferAttribute(positions,i+2);
-          const count=Math.ceil(b.clone().sub(a).cross(c.clone().sub(a)).length()/18);
-          for(let j=0;j<count;j++){let u=Math.random(),v=Math.random();if(u+v>1){u=1-u;v=1-v;}const p=a.clone().addScaledVector(b.clone().sub(a),u).addScaledVector(c.clone().sub(a),v);surface.push(p.x,-p.y,p.z+1.5);seeds.push(Math.random(),delay);}
+          const count=Math.ceil(b.clone().sub(a).cross(c.clone().sub(a)).length()/12);
+          for(let j=0;j<count;j++){let u=Math.random(),v=Math.random();if(u+v>1){u=1-u;v=1-v;}const p=a.clone().addScaledVector(b.clone().sub(a),u).addScaledVector(c.clone().sub(a),v);surface.push(p.x,-p.y,p.z+2+Math.random()*5);seeds.push(Math.random(),delay);}
         }
       });
     });
@@ -47,21 +47,34 @@ export function createScene(root: HTMLElement) {
   const geometry=new THREE.BufferGeometry();geometry.setAttribute("position",new THREE.Float32BufferAttribute(surface,3));geometry.setAttribute("aSeed",new THREE.Float32BufferAttribute(seeds,2));
   const offsets=new Float32Array(surface.length), velocities=new Float32Array(surface.length);
   const offsetAttribute=new THREE.BufferAttribute(offsets,3).setUsage(THREE.DynamicDrawUsage);geometry.setAttribute("aOffset",offsetAttribute);
-  const material=new THREE.ShaderMaterial({transparent:true,depthWrite:false,uniforms:{uTime:{value:0},uAge:{value:0},uOpacity:{value:1},uPixelRatio:{value:renderer.getPixelRatio()}},
-    vertexShader:`attribute vec2 aSeed;attribute vec3 aOffset;uniform float uTime,uAge,uPixelRatio;varying float vAlpha;
+  const material=new THREE.ShaderMaterial({transparent:true,depthWrite:false,uniforms:{uTime:{value:0},uAge:{value:0},uFinish:{value:0},uOpacity:{value:1},uPixelRatio:{value:renderer.getPixelRatio()},uTouch:{value:new THREE.Vector3()},uTouchStrength:{value:0}},
+    vertexShader:`attribute vec2 aSeed;attribute vec3 aOffset;uniform float uTime,uAge,uFinish,uPixelRatio,uTouchStrength;uniform vec3 uTouch;varying float vAlpha;varying float vGlint;
     void main(){vec3 p=position+aOffset;float born=smoothstep(aSeed.y,aSeed.y+1.,uAge);float lift=smoothstep(1.,35.,length(aOffset));
     p+=vec3(sin(aSeed.x*70.)*35.,-25.,30.)*(1.-born);
-    float glint=pow(.5+.5*sin(uTime*1.8+aSeed.x*100.),5.);
-    vAlpha=born*(.25+.65*glint+lift*.2);gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.);gl_PointSize=1.3+aSeed.x*2.3+lift*1.5;}`,
-    fragmentShader:`uniform float uOpacity;varying float vAlpha;void main(){float d=length(gl_PointCoord-.5)*2.;float a=1.-smoothstep(.15,1.,d);gl_FragColor=vec4(1.,.72,.28,a*vAlpha*uOpacity);}`});
-  logo.add(new THREE.Points(geometry,material));
-  let lost=false,started:number|null=null,bufferWidth=0,bufferHeight=0,layoutSignature="";
+    float breath=pow(.5+.5*sin(uTime*.48),3.);
+    p+=born*vec3(sin(uTime*.65+position.y*.026+aSeed.x*50.),cos(uTime*.52+position.x*.024+aSeed.x*63.),sin(uTime*.6+aSeed.x*40.))*(3.+breath*9.);
+    float dist=length(position.xy-uTouch.xy);
+    float touch=exp(-dist*dist/15000.)*uTouchStrength*born;
+    float ripple=sin(dist*.035-uTime*3.);
+    p.xy+=normalize(position.xy-uTouch.xy+vec2(.01))*touch*(12.+ripple*14.);
+    p.z+=touch*(18.+ripple*12.);
+    float wave=sin(position.y*.035-uTime*1.1+position.x*.014);
+    float glint=pow(.5+.5*sin(uTime*1.8+aSeed.x*100.),7.);
+    float sweep=clamp((position.x+155.)/315.,0.,1.);
+    float finish=smoothstep(sweep*.65,sweep*.65+.35,uFinish);
+    p+=vec3(sin(aSeed.x*90.)*14.,cos(aSeed.x*75.)*14.,22.)*(1.-finish);
+    vGlint=glint;vAlpha=born*finish*(.38+.4*glint+.16*wave+lift*.2);
+    gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.);gl_PointSize=(1.1+aSeed.x*2.+glint*1.2+lift)*uPixelRatio;}`,
+    fragmentShader:`uniform float uOpacity;varying float vAlpha;varying float vGlint;void main(){float d=length(gl_PointCoord-.5)*2.;float a=1.-smoothstep(.12,1.,d);vec3 color=mix(vec3(.72,.48,.16),vec3(1.,.94,.72),vGlint);gl_FragColor=vec4(color,a*vAlpha*uOpacity);}`});
+  const logoParticles = new THREE.Points(geometry,material);
+  logo.add(logoParticles);
+  let lost=false,started:number|null=null,heroStarted:number|null=null,bufferWidth=0,bufferHeight=0,layoutSignature="";
   const pointer=new THREE.Vector3(),direction=new THREE.Vector3(),lastPointer=new THREE.Vector2(900,900);
   const pointerVelocity=new THREE.Vector2();let pointerActive=false;
-  const fine=matchMedia("(hover:hover) and (pointer:fine)").matches;
-  const activate=(event:PointerEvent)=>{if(event.pointerType!=="touch")pointerActive=true;};
+  const input={x:innerWidth/2,y:innerHeight/2};
+  const activate=(event:PointerEvent)=>{pointerActive=true;input.x=event.clientX;input.y=event.clientY;};
   const deactivate=()=>{pointerActive=false;lastPointer.set(900,900);};
-  window.addEventListener("pointermove",activate,{passive:true});document.addEventListener("pointerleave",deactivate);window.addEventListener("blur",deactivate);
+  window.addEventListener("pointermove",activate,{passive:true});window.addEventListener('pointerdown',activate,{passive:true});window.addEventListener('pointerup',deactivate,{passive:true});document.addEventListener("pointerleave",deactivate);window.addEventListener("blur",deactivate);
   // Use the displayed canvas aspect, including its entrance transform. The drawing
   // buffer follows layout size only, avoiding allocations during the transition.
   const measure=(r:DOMRect)=>{const w=Math.round(canvas.clientWidth),h=Math.round(canvas.clientHeight);if(w!==bufferWidth||h!==bufferHeight){renderer.setSize(w,h,false);bufferWidth=w;bufferHeight=h;}
@@ -78,9 +91,28 @@ export function createScene(root: HTMLElement) {
       face.color.setHex(dark?0x544936:0x2c2922);
       parts.forEach(({mesh,delay})=>{const t=THREE.MathUtils.smoothstep(age,delay,delay+1.1);mesh.scale.set(1,-Math.max(.001,t),1);mesh.position.y=(1-t)*-35;});
       const complete=root.dataset.intro!=="waiting";
-      logo.rotation.set(complete?-.08:-.08-frame.y*.2,complete?-.24:-.24+frame.x*.4,complete?0:Math.sin(frame.time*.3)*.012);
-      logo.position.y=complete?0:Math.sin(frame.time*.65)*3;
-      material.uniforms.uTime.value=frame.time;material.uniforms.uAge.value=age;material.uniforms.uOpacity.value=complete?0:dark?.95:.8;
+      if (complete && heroStarted === null) heroStarted = frame.time;
+      const particleReveal = complete ? THREE.MathUtils.smoothstep(frame.time-(heroStarted??frame.time),.5,2.4) : 0;
+      logoParticles.visible = particleReveal > 0;
+      const entryBlend=Number(root.dataset.logoBlend??1);
+      const finish=Number(root.dataset.logoFinish??1);
+      // Matte-to-metal light response changes over the same interval as the
+      // travelling particle reveal; opacity alone cannot soften that change.
+      face.metalness=THREE.MathUtils.lerp(.05,.72,finish);
+      face.roughness=THREE.MathUtils.lerp(.85,.3,finish);
+      face.clearcoat=.35*finish;
+      gold.metalness=THREE.MathUtils.lerp(.08,.78,finish);
+      gold.roughness=THREE.MathUtils.lerp(.8,.24,finish);
+      gold.clearcoat=.45*finish;
+      sides.metalness=THREE.MathUtils.lerp(.08,.7,finish);
+      material.uniforms.uFinish.value=finish;
+      for(const surfaceMaterial of [face,gold,sides]){
+        if(!surfaceMaterial.transparent){surfaceMaterial.transparent=true;surfaceMaterial.needsUpdate=true;}
+        surfaceMaterial.opacity=entryBlend;
+      }
+      logo.rotation.set(complete?-.08+Math.sin(frame.time*.35)*.025-frame.y*.06:-.08-frame.y*.2,complete?-.24+Math.sin(frame.time*.28)*.055+frame.x*.1:-.24+frame.x*.4,Math.sin(frame.time*.3)*.012);
+      logo.position.y=Math.sin(frame.time*.5)*3;
+      material.uniforms.uTime.value=frame.time;material.uniforms.uAge.value=age;material.uniforms.uOpacity.value=.92*entryBlend*particleReveal;
       const heroRect=hero.getBoundingClientRect();
       if(complete&&(heroRect.width===0||heroRect.bottom<0||heroRect.top>innerHeight))return;
       const artRect=art.getBoundingClientRect();
@@ -95,12 +127,15 @@ export function createScene(root: HTMLElement) {
       if(complete){
         studio.mountLogo(logo,[ambient,key,rim,fill]);
         studio.update(frame,bufferWidth,bufferHeight,{x:artRect.left-heroRect.left,y:artRect.top-heroRect.top,width:artRect.width,height:artRect.height},dark);
-        pointerOnLogo=studio.localPointer(((frame.x+.5)*innerWidth-heroRect.left)/bufferWidth*2-1,-(((frame.y+.5)*innerHeight-heroRect.top)/bufferHeight*2-1),logo,pointer);
+        pointerOnLogo=studio.localPointer((input.x-heroRect.left)/bufferWidth*2-1,-((input.y-heroRect.top)/bufferHeight*2-1),logo,pointer);
       }else{
         pointer.set(((frame.x+.5)*innerWidth-r.left)/r.width*2-1,-(((frame.y+.5)*innerHeight-r.top)/r.height*2-1),.5).unproject(camera);
         direction.copy(pointer).sub(camera.position).normalize();pointer.copy(camera.position).addScaledVector(direction,-camera.position.z/direction.z);logo.updateMatrixWorld();logo.worldToLocal(pointer);
       }
-      const dt=Math.min(frame.dt,.025),interactive=fine&&pointerActive&&pointerOnLogo&&root.dataset.overlay!=="true";
+      const dt=Math.min(frame.dt,.025),interactive=pointerActive&&pointerOnLogo&&root.dataset.overlay!=="true";
+      const touchActive=pointerActive&&pointerOnLogo&&root.dataset.overlay!=="true";
+      material.uniforms.uTouch.value.lerp(pointer,1-Math.exp(-dt*9));
+      material.uniforms.uTouchStrength.value+=((touchActive?1:0)-material.uniforms.uTouchStrength.value)*(1-Math.exp(-dt*5));
       if(interactive&&lastPointer.x!==900){pointerVelocity.set((pointer.x-lastPointer.x)/Math.max(dt,.001),(pointer.y-lastPointer.y)/Math.max(dt,.001)).clampLength(0,650);}else pointerVelocity.set(0,0);
       if(interactive)lastPointer.set(pointer.x,pointer.y);
       for(let i=0;i<surface.length;i+=3){
@@ -120,6 +155,6 @@ export function createScene(root: HTMLElement) {
       renderer.setScissorTest(false);renderer.setViewport(0,0,bufferWidth,bufferHeight);renderer.clear();
       if(complete)studio.render();else renderer.render(scene,camera);
     },
-    dispose(){window.removeEventListener("pointermove",activate);document.removeEventListener("pointerleave",deactivate);window.removeEventListener("blur",deactivate);canvas.removeEventListener("webglcontextlost",fail);delete art.dataset.gl;delete hero.dataset.room;studio.dispose();parts.forEach(({mesh})=>mesh.geometry.dispose());geometry.dispose();material.dispose();face.dispose();gold.dispose();sides.dispose();renderer.dispose();},
+    dispose(){window.removeEventListener("pointermove",activate);window.removeEventListener('pointerdown',activate);window.removeEventListener('pointerup',deactivate);document.removeEventListener("pointerleave",deactivate);window.removeEventListener("blur",deactivate);canvas.removeEventListener("webglcontextlost",fail);delete art.dataset.gl;delete hero.dataset.room;studio.dispose();parts.forEach(({mesh})=>mesh.geometry.dispose());geometry.dispose();material.dispose();face.dispose();gold.dispose();sides.dispose();renderer.dispose();},
   };
 }

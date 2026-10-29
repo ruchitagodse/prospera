@@ -5,7 +5,7 @@ export function createStudioControls(root: HTMLElement) {
   const surface = root.querySelector<HTMLElement>(".p-room-interaction");
   const position = new THREE.Vector3(0, 3.1, 11);
   const destination = position.clone(), home = position.clone();
-  const pose = { position, yaw: 0, pitch: -.1 };
+  const pose = { position, yaw: 0, pitch: -.1, explored: false, interacting: false };
   let yaw = 0, pitch = -.1, homePitch = -.1, explored = false, pinch = 0;
   const pointers = new Map<number, { x: number; y: number }>();
   const forward = new THREE.Vector3(), candidate = new THREE.Vector3();
@@ -40,7 +40,7 @@ export function createStudioControls(root: HTMLElement) {
     const dx = event.clientX - previous.x, dy = event.clientY - previous.y;
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
     if (pointers.size >= 2) { const distance = pinchDistance(); travel((distance-pinch)*.025); pinch = distance; }
-    else { yaw -= dx*.0055; pitch = THREE.MathUtils.clamp(pitch-dy*.0045, -1.35, 1.35); explored = true; }
+    else { yaw -= dx*.0026; pitch = THREE.MathUtils.clamp(pitch-dy*.0022, -1.1, 1.1); explored = true; }
   };
   const up = (event: PointerEvent) => {
     pointers.delete(event.pointerId); pinch = pinchDistance();
@@ -79,7 +79,9 @@ export function createStudioControls(root: HTMLElement) {
   return {
     setHome(value: THREE.Vector3, angle: number) { home.copy(value); homePitch = angle; if (!explored) { destination.copy(home); position.copy(home); yaw=0;pitch=angle;pose.yaw=0;pose.pitch=angle; } },
     update(dt: number) {
-      const smooth=1-Math.exp(-dt*12);
+      const smooth=1-Math.exp(-Math.min(dt,.05)*7);
+      pose.explored = explored;
+      pose.interacting = pointers.size > 0 || Math.abs(yaw-pose.yaw) > .002 || Math.abs(pitch-pose.pitch) > .002 || position.distanceToSquared(destination) > .0004;
       position.lerp(destination,smooth); pose.yaw+=(yaw-pose.yaw)*smooth; pose.pitch+=(pitch-pose.pitch)*smooth;
       const state=[pose.yaw,pose.pitch,position.x,position.y,position.z].map(value=>value.toFixed(2)).join(",");
       if(surface&&state!==lastState){lastState=state;surface.dataset.view=state;surface.dataset.explored=String(explored);}

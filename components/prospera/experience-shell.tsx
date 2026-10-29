@@ -10,10 +10,10 @@ import { usePreferences } from "@/store/use-preferences";
 import { headline } from "@/content/site";
 import { GalleryMenu, pages, type PageId } from "./gallery-menu";
 import { AboutContent } from "./about-content";
-import { ServicesContent } from "./services-content";
 import { WorkExperience } from "./work-experience";
 import { ContactInquiry } from "./contact-inquiry";
 import "./experience.css";
+import "./typography.css";
 import "./about-scene.css";
 import { logoInkPath, logoGoldPath, logoViewBox } from "./logo-geometry";
 
@@ -84,15 +84,20 @@ export default function ExperienceShell({ initialPage = "home", initialProject =
   }, [page, panel, introComplete]);
   useEffect(() => {
     if (entered) return;
-    let cancelled = false; let completed = 0;
-    const done = () => { completed++; if (!cancelled) setProgress(Math.round(completed / 2 * 100)); };
+    let cancelled = false;
+    const started=performance.now();
+    // The counter paces the brand introduction; 100 is reserved for ready assets.
+    const steps=window.setInterval(()=>{
+      if(!cancelled) setProgress(Math.min(90,Math.floor((performance.now()-started)/motion.loaderMinMs*10)*10));
+    },100);
+    const done = () => {};
     const logo = new Image(); logo.src = "/prospera-logo.svg";
     const imageTask = logo.decode().catch(() => {}).then(done);
     const fontTask = document.fonts.ready.then(done);
     const minTime = new Promise((resolve) => setTimeout(resolve, reduced ? 150 : motion.loaderMinMs));
     const cap = new Promise((resolve) => setTimeout(resolve, 5000));
-    void Promise.all([Promise.race([Promise.all([imageTask, fontTask]), cap]), minTime]).then(() => { if (!cancelled) { setProgress(100); setReady(true); } });
-    return () => { cancelled = true; };
+    void Promise.all([Promise.race([Promise.all([imageTask, fontTask]), cap]), minTime]).then(() => { if (!cancelled) { clearInterval(steps);setProgress(100); setReady(true); } });
+    return () => { cancelled = true; clearInterval(steps); };
   }, [reduced, entered]);
 
   useLayoutEffect(() => {
@@ -101,11 +106,7 @@ export default function ExperienceShell({ initialPage = "home", initialProject =
   }, [reduced]);
 
   useEffect(() => {
-    const value = { count: Number(counter.current?.textContent) || 0 };
-    const tween = gsap.to(value, { count: progress, duration: reduced ? 0 : .45, ease: "power2.out", onUpdate: () => {
-      if (counter.current) counter.current.textContent = String(Math.round(value.count)).padStart(3, "0");
-    } });
-    return () => { tween.kill(); };
+    if(counter.current) counter.current.textContent=String(progress);
   }, [progress, reduced]);
 
   useLayoutEffect(() => {
@@ -166,12 +167,18 @@ export default function ExperienceShell({ initialPage = "home", initialProject =
     <a className="p-skip" href="#main">Skip to content</a>
     <div className="p-cursor" aria-hidden="true"><i/></div>
     <div className="p-fluid-lens" aria-hidden="true"/><canvas key="fluid-wake-v2" className="p-pointer-trail" aria-hidden="true" data-active="0"/>
-    {(!entered || leaving) && <div ref={loader} className="p-loader"><span className="p-loader-top">PROSPERA <span>BUILD · GROW · PROSPER</span></span><div className="p-loader-center"><div className="p-loader-logo-stage"/><p>Build. Grow. Prosper.</p></div><div className="p-loader-bottom"><span className="p-counter"><span ref={counter}>000</span><small>%</small></span>{ready ? <div className="p-gate"><p>Make yourself at home.</p><button onClick={() => enter(true)}>Enter with sound <span>↗</span></button><button onClick={() => enter(false)}>Enter silent <span>→</span></button></div> : <span className="p-label" role="status">Getting things ready</span>}</div></div>}
+    {(!entered || leaving) && <div ref={loader} className="p-loader p-opening-screen" data-ready={ready}>
+      <span className="p-opening-brand">PROSPERA</span>
+      <div className="p-loader-center"><div className="p-loader-logo-stage"><Mark className="p-entry-emblem" emblem assembly/></div><p>Build. Grow. Prosper.</p></div>
+      <div className="p-opening-count" role="progressbar" aria-label="Loading experience" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}><span ref={counter}>000</span><small>%</small></div>
+      <div className="p-loader-bottom">
+        {ready && <div className="p-gate"><button type="button" onClick={() => enter(true)}><span aria-hidden="true">♪</span> Enter with audio</button><button type="button" onClick={() => enter(false)}><span aria-hidden="true">♩</span> Enter without audio</button></div>}
+      </div>
+    </div>}
     <div ref={stage} className="p-page-stage" data-page={page} inert={!entered || !introComplete} onClick={event => { const link=(event.target as HTMLElement).closest<HTMLAnchorElement>("a[href^=\"#\"]"); const target=link?.getAttribute("href")?.slice(1); if(target && pages.some(item=>item.id===target)){event.preventDefault();navigate(target as PageId);} }}>
       <header className="p-header"><a href="#home" className="p-wordmark" aria-label="PROSPERA home"><Mark className="p-header-logo" wordmark/></a><span className="p-header-note">Digital studio<br/>Mumbai, India</span><div className="p-header-actions"><button onClick={() => setPanel("settings")} aria-label="Open settings">Settings <span>☼</span></button><button onClick={openMenu} aria-label="Open menu">Menu <span className="p-menu-icon">═</span></button></div></header>
-      <main id="main"><section id="home" className="p-hero"><div className="p-hero-top"><span className="p-label"><i/> A little care. A lot of possibility.</span><span className="p-edition">01 — INTRODUCTION</span></div><div className="p-hero-grid"><div className="p-hero-copy"><h1 ref={heading} tabIndex={-1} aria-label="No one cares about your business as much as we do.">{headline.map((line) => <span className="p-line" key={line} aria-hidden="true">{line.split(" ").map((word,index) => <span className="p-word" key={index}>{[...word].map((letter,i) => <span className="p-letter" key={i}>{letter}</span>)} </span>)}</span>)}<span className="p-line p-final" aria-hidden="true"><em>{["we", "do."].map(word => <span className="p-word" key={word}>{[...word].map((letter, i) => <span className="p-letter" key={i}>{letter}</span>)}{word === "we" ? " " : ""}</span>)}</em></span></h1><div className="p-intro"><span className="p-intro-rule"/><p>Websites, stores, apps and content.<br/>Built with care. Made to prosper.</p><a href="#contact" className="p-cta" data-magnetic onClick={() => tone()}>Let’s talk <span>↗</span></a></div></div><div className="p-art p-cartoon-studio" role="group" aria-label="An animated three-dimensional creative computer studio"><div className="p-studio-screen" aria-hidden="true"><i/><i/><i/></div><div className="p-studio-lamp" aria-hidden="true"/><div className="p-studio-glow" aria-hidden="true"/><canvas className="p-gl" aria-hidden="true"/><div className="p-room-interaction" tabIndex={0} role="group" aria-label="Explore the three-dimensional studio" aria-describedby="p-room-help" data-lenis-prevent="true"/><div className="p-sculpture"><Mark className="p-main-mark" emblem/></div><span id="p-room-help" className="p-sr-only">Drag to explore the three-dimensional studio.</span><span className="p-studio-status">Creative systems at work</span></div></div><div className="p-hero-bottom"><a href="#studio">Explore the studio <span>↓</span></a><span>DESIGN WITH INTENT. BUILD WITH CARE.</span></div></section>
+      <main id="main"><section id="home" className="p-hero"><div className="p-hero-top"><span className="p-label"><i/> Websites · stores · business tools</span><span className="p-edition">01 — INTRODUCTION</span></div><div className="p-hero-grid"><div className="p-hero-copy"><h1 ref={heading} tabIndex={-1} aria-label="No one cares about your business as much as we do.">{headline.map((line) => <span className="p-line" key={line} aria-hidden="true">{line.split(" ").map((word,index) => <span className="p-word" key={index}>{[...word].map((letter,i) => <span className="p-letter" key={i}>{letter}</span>)} </span>)}</span>)}<span className="p-line p-final" aria-hidden="true"><em>{["we", "do."].map(word => <span className="p-word" key={word}>{[...word].map((letter, i) => <span className="p-letter" key={i}>{letter}</span>)}{word === "we" ? " " : ""}</span>)}</em></span></h1><div className="p-intro"><span className="p-intro-rule"/><p>Digital experiences that move your business forward.</p><a href="#contact" className="p-cta" data-magnetic onClick={() => tone()}>Let’s talk <span>↗</span></a></div></div><div className="p-art p-cartoon-studio" role="group" aria-label="An animated three-dimensional creative computer studio"><div className="p-studio-screen" aria-hidden="true"><i/><i/><i/></div><div className="p-studio-lamp" aria-hidden="true"/><div className="p-studio-glow" aria-hidden="true"/><canvas className="p-gl" aria-hidden="true"/><div className="p-room-interaction" tabIndex={0} role="group" aria-label="Explore the three-dimensional studio" aria-describedby="p-room-help" data-lenis-prevent="true"/><div className="p-sculpture"><Mark className="p-main-mark" emblem/></div><span id="p-room-help" className="p-sr-only">Drag to explore the three-dimensional studio.</span><span className="p-studio-status">Creative systems at work</span></div></div><div className="p-hero-bottom"><a href="#studio">Explore the studio <span>↓</span></a></div></section>
       <section className="p-studio" id="studio"><AboutContent active={page==="studio"} reduced={reduced}/></section>
-      <section className="p-services" id="services"><ServicesContent/></section>
       <section className="p-work" id="work"><WorkExperience active={page==="work"} reduced={reduced} initialProject={initialProject}/></section>
       <footer id="contact"><ContactInquiry/></footer></main>
     </div>

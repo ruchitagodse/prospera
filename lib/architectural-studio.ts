@@ -19,7 +19,8 @@ export function createArchitecturalStudio(renderer: THREE.WebGLRenderer, root: H
   const stone = new THREE.MeshStandardMaterial({ color: 0xc4bba9, roughness: .8 });
   const alcove = new THREE.MeshStandardMaterial({ color: 0xaca18e, roughness: 1 });
   const materials = [plaster, floorMaterial, stone, alcove];
-  materials.forEach(material => { material.transparent = true; });
+  // The canvas entrance owns the fade; keep room shading stable throughout it.
+  materials.forEach(material => { material.transparent = false; material.opacity = 1; });
   const geometries: THREE.BufferGeometry[] = [];
   const mesh = (geometry: THREE.BufferGeometry, material: THREE.Material, x: number, y: number, z: number) => {
     geometries.push(geometry);
@@ -160,6 +161,17 @@ export function createArchitecturalStudio(renderer: THREE.WebGLRenderer, root: H
     object.position.x+=17;
     object.position.z+=10;
   });
+  // The sofa back faces the return wall: rotate the whole lounge around its
+  // seating centre so the cushions face into the room, with the back flush.
+  loungeParts.forEach(object=>{
+    const dx=object.position.x-7;
+    const dz=object.position.z-8.5;
+    object.position.x=7-dx;
+    object.position.z=15.55-dz;
+    object.rotation.y+=Math.PI;
+  });
+  const loungeLight=new THREE.PointLight(0xffd7a0,9,12,2);
+  loungeLight.position.set(10,3,14);architecture.add(loungeLight);
   // Framed geometric art above the seating.
   for(let i=0;i<3;i++) {
     const x=5+i*1.35;
@@ -217,9 +229,33 @@ export function createArchitecturalStudio(renderer: THREE.WebGLRenderer, root: H
   scene.add(sunlight); scene.add(sunlight.target);
   const bounce = new THREE.DirectionalLight(0xffffff, .5); bounce.position.set(6, 3, 5); scene.add(bounce);
   const home = new THREE.Vector3();
+  const parallax=new THREE.Vector2();
+  const daylightMaterial=new THREE.ShaderMaterial({
+    transparent:true,depthWrite:false,
+    uniforms:{time:{value:0},strength:{value:.14}},
+    vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+    fragmentShader:'varying vec2 vUv;uniform float time,strength;void main(){float edge=smoothstep(0.,.15,vUv.x)*(1.-smoothstep(.75,1.,vUv.x))*smoothstep(0.,.15,vUv.y)*(1.-smoothstep(.8,1.,vUv.y));float bands=pow(.5+.5*sin(vUv.x*36.+vUv.y*6.+sin(time*.18)*1.8),8.);gl_FragColor=vec4(1.,.84,.53,bands*edge*strength);}',
+  });
+  const daylight=mesh(new THREE.PlaneGeometry(16,18),daylightMaterial,-7,.025,-5);
+  daylight.rotation.x=-Math.PI/2;daylight.rotation.z=-.28;
+  // Screen-space clearing keeps architecture out of the logo's silhouette,
+  // including while the room camera is being explored.
+  const quietScene=new THREE.Scene();
+  const quietCamera=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+  const quietGeometry=new THREE.PlaneGeometry(2,2);
+  const quietMaterial=new THREE.ShaderMaterial({
+    transparent:true,depthTest:false,depthWrite:false,
+    uniforms:{center:{value:new THREE.Vector2(.75,.5)},radius:{value:new THREE.Vector2(.3,.55)},paper:{value:new THREE.Color(0xe9e5dc)}},
+    vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}',
+    fragmentShader:'varying vec2 vUv;uniform vec2 center;uniform vec2 radius;uniform vec3 paper;void main(){float d=length((vUv-center)/radius);float a=1.-smoothstep(.62,1.15,d);gl_FragColor=vec4(paper,a);\n#include <tonemapping_fragment>\n#include <colorspace_fragment>\n}',
+  });
+  quietScene.add(new THREE.Mesh(quietGeometry,quietMaterial));
   const raycaster = new THREE.Raycaster(), mouse = new THREE.Vector2(), inverse = new THREE.Matrix4();
   const localRay = new THREE.Ray(), facePlane = new THREE.Plane(new THREE.Vector3(0,0,1),-12.5);
-  let signature = "", darkBefore: boolean | null = null, revealStart: number | null = null;
+  let signature = "", darkBefore: boolean | null = null;
+  let idleMotion = 1;
+  let driftPhase = 0;
+  dust.visible = false;
   return {
     mountLogo(logo: THREE.Group, lights: THREE.Light[]) {
       if(logo.parent===sculpture)return;
@@ -229,6 +265,9 @@ export function createArchitecturalStudio(renderer: THREE.WebGLRenderer, root: H
     },
     update(frame: Frame, width: number, height: number, art: { x: number; y: number; width: number; height: number }, dark: boolean) {
       const nextSignature = `${width}:${height}:${art.x}:${art.y}:${art.width}:${art.height}`;
+      quietMaterial.uniforms.center.value.set((art.x+art.width*.5)/width,1-(art.y+art.height*.5)/height);
+      quietMaterial.uniforms.radius.value.set(art.width*.66/width,art.height*.72/height);
+      quietMaterial.uniforms.paper.value.setHex(dark?0x303029:0xe9e5dc);
       if (nextSignature !== signature) {
         signature = nextSignature;
         camera.fov=40;
@@ -260,10 +299,11 @@ export function createArchitecturalStudio(renderer: THREE.WebGLRenderer, root: H
         sunlight.intensity = dark ? .65 : .85;
         renderer.shadowMap.needsUpdate = true;
       }
-      if (revealStart === null) revealStart = frame.time;
-      const reveal = THREE.MathUtils.smoothstep(frame.time - revealStart, 0, 1.25);
-      materials.forEach(material => { material.opacity = reveal; if (reveal === 1 && material.transparent) { material.transparent = false; material.needsUpdate = true; } });
       const pose=controls.update(frame.dt);
+      const motionStep = Math.min(frame.dt,.04);
+      const drifting = !pose.interacting && root.dataset.overlay !== 'true';
+      idleMotion += ((drifting ? 1 : 0) - idleMotion) * (1 - Math.exp(-motionStep * 2));
+      driftPhase += motionStep * .24 * idleMotion;
       leaves.forEach((item,i)=>{
         const breeze=Math.sin(frame.time*1.15+i*.45);
         item.rotation.z=.5+breeze*.16;
@@ -281,13 +321,26 @@ export function createArchitecturalStudio(renderer: THREE.WebGLRenderer, root: H
         position.needsUpdate=true;geometry.computeVertexNormals();
       });
       screenRows.forEach((row,i)=>{row.scale.x=.6+.4*(.5+.5*Math.sin(frame.time*1.6-i*.8));});
-      windowLight.position.x=-10+Math.sin(frame.time*.18)*.5;
-      windowLight.intensity=22+Math.sin(frame.time*.3)*1.5;
+      windowLight.position.x=-10+Math.sin(frame.time*.24)*1.8;
+      windowLight.intensity=22+Math.sin(frame.time*.45)*4;
+      daylightMaterial.uniforms.time.value=frame.time;
+      daylightMaterial.uniforms.strength.value=(dark?.1:.25)*(1+Math.sin(frame.time*.38)*.22);
+      loungeLight.intensity=9+Math.sin(frame.time*.65)*.7;
       screen.emissiveIntensity=.35+Math.sin(frame.time*1.2)*.07;
       glow.intensity=12+Math.sin(frame.time*.7)*.6;
       pendants.forEach((item,i)=>{item.position.x=pendantPositions[i]+Math.sin(frame.time*.35+i)*.035;});
       dust.position.y=Math.sin(frame.time*.16)*.2;dust.rotation.y=Math.sin(frame.time*.1)*.012;
-      camera.position.copy(pose.position);camera.rotation.set(pose.pitch+Math.sin(frame.time*.22)*.004,pose.yaw+Math.sin(frame.time*.18)*.008,0,"YXZ");camera.updateMatrixWorld();
+      // A slow camera orbit adds visible depth without changing the brand view.
+      const drift=driftPhase;
+      const follow=1-Math.exp(-Math.min(frame.dt,.04)*2);
+      const canFollow=root.dataset.overlay!=='true';
+      parallax.x+=((canFollow?frame.x:0)-parallax.x)*follow;
+      parallax.y+=((canFollow?frame.y:0)-parallax.y)*follow;
+      camera.position.copy(pose.position);
+      camera.position.x+=(Math.sin(drift)*1.05+parallax.x*.35)*idleMotion;
+      camera.position.y+=(Math.sin(drift*2)*.17-parallax.y*.1)*idleMotion;
+      camera.position.z+=(1-Math.cos(drift))*.2*idleMotion;
+      camera.rotation.set(pose.pitch+(Math.sin(drift*2)*.008+parallax.y*.006)*idleMotion,pose.yaw+(Math.sin(drift)*.035-parallax.x*.008)*idleMotion,0,"YXZ");camera.updateMatrixWorld();
     },
     localPointer(x:number,y:number,logo:THREE.Group,point:THREE.Vector3) {
       mouse.set(x,y);raycaster.setFromCamera(mouse,logoCamera);logo.updateWorldMatrix(true,false);
@@ -298,8 +351,9 @@ export function createArchitecturalStudio(renderer: THREE.WebGLRenderer, root: H
       // Render the moving room behind the fixed hero sculpture. Clearing depth
       // prevents an explored wall from covering the logo's independent view.
       camera.layers.set(0);renderer.render(scene,camera);
-      renderer.clearDepth();renderer.render(scene,logoCamera);
+      renderer.render(quietScene,quietCamera);
+      renderer.clearDepth();if(root.dataset.logoFlight!=='true')renderer.render(scene,logoCamera);
     },
-    dispose() { controls.dispose();geometries.forEach(geometry => geometry.dispose()); materials.forEach(material => material.dispose());screenInk.dispose();dustMaterial.dispose();lightSlot.dispose();sunlight.shadow.dispose();scene.clear(); },
+    dispose() { controls.dispose();daylightMaterial.dispose();geometries.forEach(geometry => geometry.dispose()); materials.forEach(material => material.dispose());quietGeometry.dispose();quietMaterial.dispose();quietScene.clear();screenInk.dispose();dustMaterial.dispose();lightSlot.dispose();sunlight.shadow.dispose();scene.clear(); },
   };
 }
