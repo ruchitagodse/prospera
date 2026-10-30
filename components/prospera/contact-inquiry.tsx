@@ -51,7 +51,7 @@ export function ContactInquiry() {
 
   return <section ref={sheet} className="p-inquiry" aria-labelledby="contact-title" data-lenis-prevent="true">
     <div className="p-inquiry-panel">
-    <div className="p-inquiry-top"><span className="p-inquiry-index">04 / Contact</span>
+    <div className="p-inquiry-top"><span className="p-inquiry-index">05 / Contact</span>
       <a className="p-inquiry-email" href="mailto:prosperadigitalstudio315@gmail.com">prosperadigitalstudio315@gmail.com</a>
       <a className="p-inquiry-close" href="#home">Close <span>×</span></a>
     </div>

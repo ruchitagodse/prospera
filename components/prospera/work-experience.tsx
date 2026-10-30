@@ -85,7 +85,7 @@ export function WorkExperience({ active, reduced, initialProject = null }: { act
   return <div ref={root} className="p-work-view" data-view={selected?"project":"gallery"}>
     <div className="p-work-gallery">
       <h1 className="p-sr-only" tabIndex={-1}>Selected work</h1>
-      <div className="p-work-topline"><span>03 / SELECTED WORK</span><span>CONCEPT WORK</span></div>
+      <div className="p-work-topline"><span>04 / SELECTED WORK</span><span>CONCEPT WORK</span></div>
       <div ref={stage} className="p-work-stage" data-lenis-prevent="true" aria-label="Project carousel. Drag or scroll to explore." onKeyDown={event=>{if(event.key==="ArrowRight"||event.key==="ArrowLeft"){event.preventDefault();go(index+(event.key==="ArrowRight"?1:-1));}}}>
         <canvas className="p-work-canvas" aria-hidden="true"/>
         <div className="p-work-fallback">{filtered.map((project,i)=><a href={`/work/${project.slug}`} key={project.slug} aria-label={`Open ${project.title}, design preview`} className="p-work-fallback-card" style={{"--card-offset":i-index} as React.CSSProperties} onClick={event=>{event.preventDefault();openRef.current(project,event.currentTarget.getBoundingClientRect());}}><img src={workAsset(project.slug)} alt=""/><span>{project.title}</span></a>)}</div>

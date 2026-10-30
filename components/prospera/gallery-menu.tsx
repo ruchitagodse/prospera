@@ -3,10 +3,11 @@
 import { useLayoutEffect, useRef, type RefObject } from "react";
 import gsap from "gsap";
 
-export type PageId = "home" | "studio" | "work" | "contact";
+export type PageId = "home" | "studio" | "services" | "work" | "contact";
 export const pages: { id: PageId; label: string; href: string }[] = [
   { id: "home", label: "Home", href: "/" },
   { id: "studio", label: "About", href: "/about" },
+  { id: "services", label: "Services", href: "/services" },
   { id: "work", label: "Work", href: "/work" },
   { id: "contact", label: "Contact", href: "/contact" },
 ];
@@ -45,7 +46,7 @@ export function GalleryMenu({ source, active, snapshot, reduced, onSelect, onClo
       copy.dataset.page = card.dataset.page;
       // Each preview owns only its page. Hidden Home canvases and positioned
       // artwork must not be carried into About or Work cards.
-      const sectionClass = card.dataset.page === "home" ? "p-hero" : card.dataset.page === "studio" ? "p-studio" : "p-work";
+      const sectionClass = card.dataset.page === "home" ? "p-hero" : card.dataset.page === "studio" ? "p-studio" : card.dataset.page === "services" ? "p-services" : "p-work";
       const previewMain = copy.querySelector("main");
       if (previewMain) {
         Array.from(previewMain.children).forEach(section => {

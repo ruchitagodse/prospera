@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import ExperienceShell from "@/components/prospera/experience-shell";
 
 export default function ServicesPage() {
-  redirect("/");
+  return <ExperienceShell initialPage="services"/>;
 }
