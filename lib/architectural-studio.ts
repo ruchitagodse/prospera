@@ -245,9 +245,9 @@ export function createArchitecturalStudio(renderer: THREE.WebGLRenderer, root: H
   const quietGeometry=new THREE.PlaneGeometry(2,2);
   const quietMaterial=new THREE.ShaderMaterial({
     transparent:true,depthTest:false,depthWrite:false,
-    uniforms:{center:{value:new THREE.Vector2(.75,.5)},radius:{value:new THREE.Vector2(.3,.55)},paper:{value:new THREE.Color(0xe9e5dc)}},
+    uniforms:{center:{value:new THREE.Vector2(.75,.5)},radius:{value:new THREE.Vector2(.3,.55)},paper:{value:new THREE.Color(0xe9e5dc)},strength:{value:1}},
     vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}',
-    fragmentShader:'varying vec2 vUv;uniform vec2 center;uniform vec2 radius;uniform vec3 paper;void main(){float d=length((vUv-center)/radius);float a=1.-smoothstep(.62,1.15,d);gl_FragColor=vec4(paper,a);\n#include <tonemapping_fragment>\n#include <colorspace_fragment>\n}',
+    fragmentShader:'varying vec2 vUv;uniform vec2 center;uniform vec2 radius;uniform vec3 paper;uniform float strength;void main(){float d=length((vUv-center)/radius);float a=(1.-smoothstep(.62,1.15,d))*strength;gl_FragColor=vec4(paper,a);\n#include <tonemapping_fragment>\n#include <colorspace_fragment>\n}',
   });
   quietScene.add(new THREE.Mesh(quietGeometry,quietMaterial));
   const raycaster = new THREE.Raycaster(), mouse = new THREE.Vector2(), inverse = new THREE.Matrix4();
@@ -265,6 +265,8 @@ export function createArchitecturalStudio(renderer: THREE.WebGLRenderer, root: H
     },
     update(frame: Frame, width: number, height: number, art: { x: number; y: number; width: number; height: number }, dark: boolean) {
       const nextSignature = `${width}:${height}:${art.x}:${art.y}:${art.width}:${art.height}`;
+      const compact=innerWidth<=600;
+      quietMaterial.uniforms.strength.value=compact?.22:1;
       quietMaterial.uniforms.center.value.set((art.x+art.width*.5)/width,1-(art.y+art.height*.5)/height);
       quietMaterial.uniforms.radius.value.set(art.width*.66/width,art.height*.72/height);
       quietMaterial.uniforms.paper.value.setHex(dark?0x303029:0xe9e5dc);
@@ -280,13 +282,14 @@ export function createArchitecturalStudio(renderer: THREE.WebGLRenderer, root: H
         logoCamera.copy(camera);
         logoCamera.layers.set(1);
         logoCamera.position.copy(home);
+        if(compact)logoCamera.position.z+=distance*.22;
         logoCamera.rotation.set(-Math.atan(.1),0,0,"YXZ");
         logoCamera.updateMatrixWorld();
         // Wide architectural framing is independent of the logo's close framing.
         camera.clearViewOffset();
-        camera.fov=60;
+        camera.fov=compact?90:60;
         camera.updateProjectionMatrix();
-        controls.setHome(home,-Math.atan(.1));
+        controls.setHome(compact?new THREE.Vector3(0,3.15,11.3):home,-Math.atan(.1),compact?1.05:0);
         sunlight.target.position.set(0,2,0);
         renderer.shadowMap.needsUpdate = true;
       }
@@ -347,12 +350,12 @@ export function createArchitecturalStudio(renderer: THREE.WebGLRenderer, root: H
       inverse.copy(logo.matrixWorld).invert();localRay.copy(raycaster.ray).applyMatrix4(inverse);
       return localRay.intersectPlane(facePlane,point)!==null;
     },
-    render() {
+    render(showLogo = true) {
       // Render the moving room behind the fixed hero sculpture. Clearing depth
       // prevents an explored wall from covering the logo's independent view.
       camera.layers.set(0);renderer.render(scene,camera);
       renderer.render(quietScene,quietCamera);
-      renderer.clearDepth();if(root.dataset.logoFlight!=='true')renderer.render(scene,logoCamera);
+      renderer.clearDepth();if(showLogo && root.dataset.logoFlight!=='true')renderer.render(scene,logoCamera);
     },
     dispose() { controls.dispose();daylightMaterial.dispose();geometries.forEach(geometry => geometry.dispose()); materials.forEach(material => material.dispose());quietGeometry.dispose();quietMaterial.dispose();quietScene.clear();screenInk.dispose();dustMaterial.dispose();lightSlot.dispose();sunlight.shadow.dispose();scene.clear(); },
   };

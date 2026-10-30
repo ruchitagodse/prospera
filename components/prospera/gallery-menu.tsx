@@ -11,10 +11,11 @@ export const pages: { id: PageId; label: string; href: string }[] = [
   { id: "contact", label: "Contact", href: "/contact" },
 ];
 
-function StaticPreview({ page }: { page: "studio" | "work" | "contact" }) {
-  if (page === "studio") return <div className="p-preview-static p-preview-about-image" role="img" aria-label="PROSPERA About page with floating gold discs"/>;
-  if (page === "work") return <div className="p-preview-static p-preview-work p-preview-work-image" role="img" aria-label="PROSPERA selected work gallery preview"/>;
-  return <div className="p-preview-static p-preview-contact"><div className="p-preview-static-head"><b>PROSPERA</b><span>04 / Contact</span></div><div className="p-preview-contact-copy"><small>Let’s make something</small><h2>Let’s build<br/><em>together.</em></h2><p>Tell us about your project<br/>and we’ll get in touch.</p></div><div className="p-preview-contact-form"><span>Client</span><span>Email</span><i/><i/><i/><button>Start a conversation ↗</button></div></div>;
+function ContactPreview() {
+  return <div className="p-preview-static p-preview-contact">
+    <div className="p-preview-contact-copy"><small>Let’s make something</small><h2>Let’s build<br/><em>together.</em></h2><p>Tell us about your project<br/>and we’ll get in touch.</p><div className="p-preview-contact-direct"><span>We aim to reply within 24 hours.</span><small>Or reach us directly</small><span>prosperadigitalstudio315@gmail.com</span><span>+91 93723 21663</span></div></div>
+    <div className="p-preview-contact-form"><span>Name</span><span>Email</span><span className="p-preview-contact-message">Tell us about your project</span><i/><i/><span className="p-preview-contact-submit">Start the conversation ↗</span></div>
+  </div>;
 }
 
 export function GalleryMenu({ source, active, snapshot, reduced, onSelect, onClose }: {
@@ -42,6 +43,15 @@ export function GalleryMenu({ source, active, snapshot, reduced, onSelect, onClo
       const copy = pageSource.cloneNode(true) as HTMLElement;
       copy.classList.add("p-preview-page");
       copy.dataset.page = card.dataset.page;
+      // Each preview owns only its page. Hidden Home canvases and positioned
+      // artwork must not be carried into About or Work cards.
+      const sectionClass = card.dataset.page === "home" ? "p-hero" : card.dataset.page === "studio" ? "p-studio" : "p-work";
+      const previewMain = copy.querySelector("main");
+      if (previewMain) {
+        Array.from(previewMain.children).forEach(section => {
+          if (!section.classList.contains(sectionClass)) section.remove();
+        });
+      }
       if (card.dataset.page === "work") {
         copy.dataset.workView = "gallery";
         copy.querySelector('.p-work-view')?.setAttribute('data-view','gallery');
@@ -83,7 +93,7 @@ export function GalleryMenu({ source, active, snapshot, reduced, onSelect, onClo
     const size = () => {
       copies.forEach(copy => {
         const host = copy.parentElement!;
-        const previewWidth = Math.max(1280,innerWidth);
+        const previewWidth = innerWidth <= 600 ? innerWidth : Math.max(1280,innerWidth);
         copy.style.width = `${previewWidth}px`;
         const scale = host.clientWidth/previewWidth;
         copy.style.setProperty("--preview-height", `${host.clientHeight/scale}px`);
@@ -194,7 +204,7 @@ export function GalleryMenu({ source, active, snapshot, reduced, onSelect, onClo
     <div className="p-gallery-top"><span>PROSPERA <small>Explore PROSPERA</small></span><button type="button" onClick={()=>finish.current()} aria-label="Close navigation">Close ×</button></div>
     <div ref={rail} className="p-gallery-rail" data-lenis-prevent="true">
       {pages.map((page,index)=><a href={page.href} key={page.id} className="p-gallery-card" data-page={page.id} aria-label={`Open ${page.label}`} aria-current={active===page.id?"page":undefined} onClick={event=>{event.preventDefault();finish.current(page.id);}}>
-        <div className="p-gallery-window" aria-hidden="true"><div className="p-gallery-preview-header" data-dark={page.id === "work"}><b>PROSPERA</b><span>Digital studio<br/>Mumbai, India</span><small>{String(index+1).padStart(2,"0")} / {page.label}</small></div>{page.id === "contact" ? <StaticPreview page={page.id}/> : null}</div>
+        <div className="p-gallery-window" aria-hidden="true"><div className="p-gallery-preview-header" data-dark={page.id === "work"}><b>PROSPERA</b><span>Digital studio<br/>Mumbai, India</span><small>{String(index+1).padStart(2,"0")} / {page.label}</small></div>{page.id === "contact" ? <ContactPreview/> : null}</div>
         <span className="p-gallery-caption"><small>0{index+1}</small>{page.label}<i>↗</i></span>
       </a>)}
     </div>

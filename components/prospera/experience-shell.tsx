@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
-import gsap from "gsap";
 import { assembleLoader, revealExperience } from "@/lib/opening-sequence";
 import { motion } from "@/config/motion";
 import { startMotion } from "@/lib/motion-engine";
@@ -68,7 +67,7 @@ export default function ExperienceShell({ initialPage = "home", initialProject =
     window.dispatchEvent(new Event("prospera:navigate"));
   }, []);
   const openMenu = () => {
-    const frame=scene.current?.capture(), size=`${innerWidth}:${innerHeight}`;
+    const frame=scene.current?.capture(innerWidth<=600), size=`${innerWidth}:${innerHeight}`;
     if (frame) { setMenuSnapshot(frame); snapshotSize.current=size; }
     else if (snapshotSize.current!==size) setMenuSnapshot(null);
     setPanel("menu"); tone();
@@ -79,7 +78,7 @@ export default function ExperienceShell({ initialPage = "home", initialProject =
     return () => window.removeEventListener("popstate", back);
   }, []);
   useEffect(() => {
-    if(page!=="work") document.title = page === "home" ? "PROSPERA | Digital Studio in Mumbai" : `${pages.find(item=>item.id===page)!.label} | PROSPERA`;
+    if(page!=="work") document.title = page === "home" ? "PROSPERA | Websites, CRMs & Automation" : `${pages.find(item=>item.id===page)!.label} | PROSPERA`;
     if (introComplete && !panel) stage.current?.querySelector<HTMLElement>(page === "home" ? "h1" : `#${page} h1, #${page} h2`)?.focus({preventScroll:true});
   }, [page, panel, introComplete]);
   useEffect(() => {
@@ -177,7 +176,7 @@ export default function ExperienceShell({ initialPage = "home", initialProject =
     </div>}
     <div ref={stage} className="p-page-stage" data-page={page} inert={!entered || !introComplete} onClick={event => { const link=(event.target as HTMLElement).closest<HTMLAnchorElement>("a[href^=\"#\"]"); const target=link?.getAttribute("href")?.slice(1); if(target && pages.some(item=>item.id===target)){event.preventDefault();navigate(target as PageId);} }}>
       <header className="p-header"><a href="#home" className="p-wordmark" aria-label="PROSPERA home"><Mark className="p-header-logo" wordmark/></a><span className="p-header-note">Digital studio<br/>Mumbai, India</span><div className="p-header-actions"><button onClick={() => setPanel("settings")} aria-label="Open settings">Settings <span>☼</span></button><button onClick={openMenu} aria-label="Open menu">Menu <span className="p-menu-icon">═</span></button></div></header>
-      <main id="main"><section id="home" className="p-hero"><div className="p-hero-top"><span className="p-label"><i/> Websites · stores · business tools</span><span className="p-edition">01 — INTRODUCTION</span></div><div className="p-hero-grid"><div className="p-hero-copy"><h1 ref={heading} tabIndex={-1} aria-label="No one cares about your business as much as we do.">{headline.map((line) => <span className="p-line" key={line} aria-hidden="true">{line.split(" ").map((word,index) => <span className="p-word" key={index}>{[...word].map((letter,i) => <span className="p-letter" key={i}>{letter}</span>)} </span>)}</span>)}<span className="p-line p-final" aria-hidden="true"><em>{["we", "do."].map(word => <span className="p-word" key={word}>{[...word].map((letter, i) => <span className="p-letter" key={i}>{letter}</span>)}{word === "we" ? " " : ""}</span>)}</em></span></h1><div className="p-intro"><span className="p-intro-rule"/><p>Digital experiences that move your business forward.</p><a href="#contact" className="p-cta" data-magnetic onClick={() => tone()}>Let’s talk <span>↗</span></a></div></div><div className="p-art p-cartoon-studio" role="group" aria-label="An animated three-dimensional creative computer studio"><div className="p-studio-screen" aria-hidden="true"><i/><i/><i/></div><div className="p-studio-lamp" aria-hidden="true"/><div className="p-studio-glow" aria-hidden="true"/><canvas className="p-gl" aria-hidden="true"/><div className="p-room-interaction" tabIndex={0} role="group" aria-label="Explore the three-dimensional studio" aria-describedby="p-room-help" data-lenis-prevent="true"/><div className="p-sculpture"><Mark className="p-main-mark" emblem/></div><span id="p-room-help" className="p-sr-only">Drag to explore the three-dimensional studio.</span><span className="p-studio-status">Creative systems at work</span></div></div><div className="p-hero-bottom"><a href="#studio">Explore the studio <span>↓</span></a></div></section>
+      <main id="main"><section id="home" className="p-hero"><div className="p-hero-top"><span className="p-label"><i/> Websites · stores · business tools</span><span className="p-edition">01 — INTRODUCTION</span></div><div className="p-hero-grid"><div className="p-hero-copy"><h1 ref={heading} tabIndex={-1} aria-label="No one cares about your business as much as we do.">{headline.map((line) => <span className="p-line" key={line} aria-hidden="true">{line.split(" ").map((word,index) => <span className="p-word" key={index}>{[...word].map((letter,i) => <span className="p-letter" key={i}>{letter}</span>)} </span>)}</span>)}<span className="p-line p-final" aria-hidden="true"><em>{["we", "do."].map(word => <span className="p-word" key={word}>{[...word].map((letter, i) => <span className="p-letter" key={i}>{letter}</span>)}{word === "we" ? " " : ""}</span>)}</em></span></h1><div className="p-intro"><span className="p-intro-rule"/><p>Websites, CRMs and automation for growing businesses.</p><a href="#contact" className="p-cta" data-magnetic onClick={() => tone()}>Let’s talk <span>↗</span></a></div></div><div className="p-art p-cartoon-studio" role="group" aria-label="An animated three-dimensional creative computer studio"><div className="p-studio-screen" aria-hidden="true"><i/><i/><i/></div><div className="p-studio-lamp" aria-hidden="true"/><div className="p-studio-glow" aria-hidden="true"/><canvas className="p-gl" aria-hidden="true"/><div className="p-room-interaction" tabIndex={0} role="group" aria-label="Explore the three-dimensional studio" aria-describedby="p-room-help" data-lenis-prevent="true"/><div className="p-sculpture"><Mark className="p-main-mark" emblem/></div><span id="p-room-help" className="p-sr-only">Drag to explore the three-dimensional studio.</span><span className="p-studio-status">Creative systems at work</span></div></div><div className="p-hero-bottom"><a href="#studio">Explore the studio <span>↓</span></a></div></section>
       <section className="p-studio" id="studio"><AboutContent active={page==="studio"} reduced={reduced}/></section>
       <section className="p-work" id="work"><WorkExperience active={page==="work"} reduced={reduced} initialProject={initialProject}/></section>
       <footer id="contact"><ContactInquiry/></footer></main>

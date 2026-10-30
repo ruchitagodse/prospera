@@ -6,7 +6,7 @@ import "./about-discs.css";
 const stories=[
 {label:"The purpose",title:"Less complexity.",body:"We simplify the way businesses work through custom software, CRM systems, apps, and automation — making data, operations, and everyday tasks easier to manage."},
 {label:"The vision",title:"Room to prosper.",body:"We bring technology and creativity together — from websites and SaaS products to distinctive branding, brochures, and original creatives that keep businesses recognised and remembered."},
-{label:"The person",title:"Ruchita Godse",body:"Driven by the belief that every business deserves thoughtful design, practical technology, and the opportunity to prosper."}
+{label:"The person",title:"Ruchita Godse",body:"I’m Ruchita, the person behind PROSPERA. I bring design and technology together to make everyday business simpler. From your first idea to the final detail, I work with you to build something useful and personal."}
 ];
 export function AboutSpotlight({active,reduced}:{active:boolean;reduced:boolean}){
  const [selected,setSelected]=useState(0);
@@ -56,6 +56,7 @@ export function AboutSpotlight({active,reduced}:{active:boolean;reduced:boolean}
  {stories.map((item,i)=><button type="button" key={item.label} id={'disc-'+i} className="p-about-disc" data-position={(i-selected+3)%3} role="tab" aria-selected={selected===i} aria-controls="about-story" aria-label={item.label+': '+item.title} tabIndex={selected===i?0:-1} onClick={()=>select(i)}>
  <span className="p-disc-face"><span className="p-disc-rim">PROSPERA — {item.label}</span>
  {i===0?<svg viewBox="0 0 240 240" fill="none" aria-hidden="true"><path d="M25 55C110 55 70 120 155 120M25 120H205M25 185C110 185 70 120 155 120M175 90l30 30-30 30"/><circle cx="155" cy="120" r="7"/></svg>:i===1?<span className="p-disc-words" aria-hidden="true">Build.<br/>Grow.<br/><em>Prosper.</em></span>:<span className="p-disc-monogram" aria-hidden="true">RG</span>}
+ {i===2&&<span className="p-disc-person-copy">The person behind PROSPERA.<br/>Design, technology, and care<br/>for your growing business.</span>}
  <span className="p-disc-note">0{i+1} / {i===0?'Simplify the everyday':i===1?'Room to prosper':'Personal by design'}</span></span></button>)}
  </div></div>
  <div className="p-discs-wave" aria-hidden="true"><svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path d="M0 45Q180 5 360 40T720 40T1080 40T1440 45V80H0Z"/></svg><svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path d="M0 50Q180 15 360 45T720 45T1080 45T1440 50V80H0Z"/></svg></div>

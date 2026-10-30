@@ -12,13 +12,16 @@ export function usePreferences() {
   const [systemReduced, setSystemReduced] = useState(false);
   useEffect(() => {
     const query = matchMedia("(prefers-reduced-motion: reduce)");
-    setSystemReduced(query.matches);
-    setManualReduced(read("prospera-reduce") === "on");
-    setThemeValue(read("prospera-theme") === "dark" ? "dark" : "light");
-    setSoundValue(read("prospera-sound") === "on");
+    // Hydrate persisted browser settings after the first client paint.
+    const hydrate = requestAnimationFrame(() => {
+      setSystemReduced(query.matches);
+      setManualReduced(read("prospera-reduce") === "on");
+      setThemeValue(read("prospera-theme") === "dark" ? "dark" : "light");
+      setSoundValue(read("prospera-sound") === "on");
+    });
     const change = () => setSystemReduced(query.matches);
     query.addEventListener("change", change);
-    return () => query.removeEventListener("change", change);
+    return () => { cancelAnimationFrame(hydrate); query.removeEventListener("change", change); };
   }, []);
   const reduced = systemReduced || manualReduced;
   useEffect(() => {

@@ -6,7 +6,7 @@ export function createStudioControls(root: HTMLElement) {
   const position = new THREE.Vector3(0, 3.1, 11);
   const destination = position.clone(), home = position.clone();
   const pose = { position, yaw: 0, pitch: -.1, explored: false, interacting: false };
-  let yaw = 0, pitch = -.1, homePitch = -.1, explored = false, pinch = 0;
+  let yaw = 0, pitch = -.1, homePitch = -.1, homeYaw = 0, explored = false, pinch = 0;
   const pointers = new Map<number, { x: number; y: number }>();
   const forward = new THREE.Vector3(), candidate = new THREE.Vector3();
   let lastState = "";
@@ -24,7 +24,7 @@ export function createStudioControls(root: HTMLElement) {
     forward.set(-Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch));
     moveTo(forward.multiplyScalar(THREE.MathUtils.clamp(amount, -1.6, 1.6)));
   };
-  const reset = () => { destination.copy(home); yaw = 0; pitch = homePitch; explored = false; release(); };
+  const reset = () => { destination.copy(home); yaw = homeYaw; pitch = homePitch; explored = false; release(); };
   const pinchDistance = () => { const pair = [...pointers.values()]; return pair.length < 2 ? 0 : Math.hypot(pair[0].x-pair[1].x,pair[0].y-pair[1].y); };
   const down = (event: PointerEvent) => {
     if (!allowed() || event.button !== 0) return;
@@ -77,7 +77,7 @@ export function createStudioControls(root: HTMLElement) {
   surface?.addEventListener("keydown",keys); window.addEventListener("blur",release);
   resetButton?.addEventListener("click",reset); closer?.addEventListener("click",goCloser); farther?.addEventListener("click",goFarther);
   return {
-    setHome(value: THREE.Vector3, angle: number) { home.copy(value); homePitch = angle; if (!explored) { destination.copy(home); position.copy(home); yaw=0;pitch=angle;pose.yaw=0;pose.pitch=angle; } },
+    setHome(value: THREE.Vector3, angle: number, heading = 0) { home.copy(value); homePitch = angle; homeYaw = heading; if (!explored) { destination.copy(home); position.copy(home); yaw=heading;pitch=angle;pose.yaw=heading;pose.pitch=angle; } },
     update(dt: number) {
       const smooth=1-Math.exp(-Math.min(dt,.05)*7);
       pose.explored = explored;

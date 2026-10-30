@@ -84,14 +84,14 @@ export function createFluidWake(canvas: HTMLCanvasElement): FluidWake | null {
   let velocity:Pair,dye:Pair,pressure:Pair,curl:BufferTarget,divergence:BufferTarget;
   let width=1,height=1,aspect=1,lost=false;
   const destroyBuffers=()=>{buffers.forEach(buffer=>{gl.deleteTexture(buffer.texture);gl.deleteFramebuffer(buffer.framebuffer);});buffers.length=0;};
-  const use=(program:Program)=>{gl.useProgram(program.value);gl.bindVertexArray(vao);};
+  const bindProgram=(program:Program)=>{gl.useProgram(program.value);gl.bindVertexArray(vao);};
   const texture=(program:Program,name:string,buffer:BufferTarget,unit:number)=>{gl.activeTexture(gl.TEXTURE0+unit);gl.bindTexture(gl.TEXTURE_2D,buffer.texture);gl.uniform1i(program.uniforms[name],unit);};
   const draw=(buffer:BufferTarget|null)=>{gl.bindFramebuffer(gl.FRAMEBUFFER,buffer?.framebuffer??null);gl.viewport(0,0,buffer?.width??canvas.width,buffer?.height??canvas.height);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);};
   const advect=(field:Pair,dt:number,decay:number)=>{
-    const p=linked.advect;use(p);texture(p,"uVelocity",velocity.read,0);texture(p,"uSource",field.read,1);gl.uniform2f(p.uniforms.uVelocityTexel,1/velocity.read.width,1/velocity.read.height);gl.uniform2f(p.uniforms.uSourceTexel,1/field.read.width,1/field.read.height);gl.uniform1f(p.uniforms.uDt,dt);gl.uniform1f(p.uniforms.uDecay,decay);draw(field.write);field.swap();
+    const p=linked.advect;bindProgram(p);texture(p,"uVelocity",velocity.read,0);texture(p,"uSource",field.read,1);gl.uniform2f(p.uniforms.uVelocityTexel,1/velocity.read.width,1/velocity.read.height);gl.uniform2f(p.uniforms.uSourceTexel,1/field.read.width,1/field.read.height);gl.uniform1f(p.uniforms.uDt,dt);gl.uniform1f(p.uniforms.uDecay,decay);draw(field.write);field.swap();
   };
   const add=(field:Pair,x:number,y:number,a:number,b:number,c:number,radius:number)=>{
-    const p=linked.splat;use(p);texture(p,"uSource",field.read,0);gl.uniform2f(p.uniforms.uPoint,x,1-y);gl.uniform3f(p.uniforms.uValue,a,b,c);gl.uniform1f(p.uniforms.uAspect,aspect);gl.uniform1f(p.uniforms.uRadius,radius);draw(field.write);field.swap();
+    const p=linked.splat;bindProgram(p);texture(p,"uSource",field.read,0);gl.uniform2f(p.uniforms.uPoint,x,1-y);gl.uniform3f(p.uniforms.uValue,a,b,c);gl.uniform1f(p.uniforms.uAspect,aspect);gl.uniform1f(p.uniforms.uRadius,radius);draw(field.write);field.swap();
   };
   const onLost=(event:Event)=>{event.preventDefault();lost=true;canvas.dataset.engine="unavailable";};
   canvas.addEventListener("webglcontextlost",onLost);
@@ -115,15 +115,15 @@ export function createFluidWake(canvas: HTMLCanvasElement): FluidWake | null {
       if(lost||!velocity)return;
       dt=Math.min(.033,Math.max(.001,dt));
       advect(velocity,dt,1.4);
-      let p=linked.curl;use(p);texture(p,"uVelocity",velocity.read,0);gl.uniform2f(p.uniforms.uTexel,1/curl.width,1/curl.height);draw(curl);
-      p=linked.vorticity;use(p);texture(p,"uVelocity",velocity.read,0);texture(p,"uCurl",curl,1);gl.uniform2f(p.uniforms.uTexel,1/curl.width,1/curl.height);gl.uniform1f(p.uniforms.uDt,dt);gl.uniform1f(p.uniforms.uCurlStrength,9);draw(velocity.write);velocity.swap();
-      p=linked.divergence;use(p);texture(p,"uVelocity",velocity.read,0);gl.uniform2f(p.uniforms.uTexel,1/curl.width,1/curl.height);draw(divergence);
+      let p=linked.curl;bindProgram(p);texture(p,"uVelocity",velocity.read,0);gl.uniform2f(p.uniforms.uTexel,1/curl.width,1/curl.height);draw(curl);
+      p=linked.vorticity;bindProgram(p);texture(p,"uVelocity",velocity.read,0);texture(p,"uCurl",curl,1);gl.uniform2f(p.uniforms.uTexel,1/curl.width,1/curl.height);gl.uniform1f(p.uniforms.uDt,dt);gl.uniform1f(p.uniforms.uCurlStrength,9);draw(velocity.write);velocity.swap();
+      p=linked.divergence;bindProgram(p);texture(p,"uVelocity",velocity.read,0);gl.uniform2f(p.uniforms.uTexel,1/curl.width,1/curl.height);draw(divergence);
       gl.bindFramebuffer(gl.FRAMEBUFFER,pressure.read.framebuffer);gl.clear(gl.COLOR_BUFFER_BIT);
-      p=linked.pressure;use(p);texture(p,"uDivergence",divergence,1);gl.uniform2f(p.uniforms.uTexel,1/curl.width,1/curl.height);
+      p=linked.pressure;bindProgram(p);texture(p,"uDivergence",divergence,1);gl.uniform2f(p.uniforms.uTexel,1/curl.width,1/curl.height);
       for(let i=0;i<12;i++){texture(p,"uPressure",pressure.read,0);draw(pressure.write);pressure.swap();}
-      p=linked.project;use(p);texture(p,"uPressure",pressure.read,0);texture(p,"uVelocity",velocity.read,1);gl.uniform2f(p.uniforms.uTexel,1/curl.width,1/curl.height);draw(velocity.write);velocity.swap();
+      p=linked.project;bindProgram(p);texture(p,"uPressure",pressure.read,0);texture(p,"uVelocity",velocity.read,1);gl.uniform2f(p.uniforms.uTexel,1/curl.width,1/curl.height);draw(velocity.write);velocity.swap();
       advect(dye,dt,2.2);
-      p=linked.display;use(p);texture(p,"uDye",dye.read,0);gl.uniform2f(p.uniforms.uTexel,1/dye.read.width,1/dye.read.height);gl.uniform3f(p.uniforms.uTint,dark?.82:.56,dark?.63:.38,dark?.28:.12);gl.uniform1f(p.uniforms.uOpacity,dark?.52:.27);draw(null);
+      p=linked.display;bindProgram(p);texture(p,"uDye",dye.read,0);gl.uniform2f(p.uniforms.uTexel,1/dye.read.width,1/dye.read.height);gl.uniform3f(p.uniforms.uTint,dark?.82:.56,dark?.63:.38,dark?.28:.12);gl.uniform1f(p.uniforms.uOpacity,dark?.52:.27);draw(null);
     },
     clear(){if(lost)return;buffers.forEach(buffer=>{gl.bindFramebuffer(gl.FRAMEBUFFER,buffer.framebuffer);gl.clear(gl.COLOR_BUFFER_BIT);});gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.clear(gl.COLOR_BUFFER_BIT);},
     dispose(){canvas.removeEventListener("webglcontextlost",onLost);destroyBuffers();programs.forEach(p=>gl.deleteProgram(p.value));shaders.forEach(s=>gl.deleteShader(s));gl.deleteBuffer(quad);gl.deleteVertexArray(vao);delete canvas.dataset.engine;},

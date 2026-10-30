@@ -81,10 +81,12 @@ export function createScene(root: HTMLElement) {
     const aspect=r.width/Math.max(1,r.height);if(Math.abs(camera.aspect-aspect)>.0001||camera.position.z===0){camera.aspect=aspect;camera.position.z=Math.max(245,315/aspect)/(2*Math.tan(THREE.MathUtils.degToRad(17)))*1.12;camera.updateProjectionMatrix();}};
   const fail=(event:Event)=>{event.preventDefault();lost=true;art.dataset.gl="false";delete hero.dataset.room;};canvas.addEventListener("webglcontextlost",fail);art.dataset.gl="true";
   return {
-    capture() {
+    capture(roomOnly = false) {
       if (lost || root.dataset.intro !== "complete" || hero.getBoundingClientRect().width === 0) return null;
-      renderer.clear(); studio.render();
-      return canvas.toDataURL("image/png");
+      renderer.clear(); studio.render(!roomOnly);
+      const snapshot = canvas.toDataURL("image/png");
+      if(roomOnly){renderer.clear();studio.render();}
+      return snapshot;
     },
     render(frame:Frame){
       if(lost)return;if(started===null)started=frame.time;const age=frame.time-started,dark=root.dataset.intro==="waiting"||root.dataset.theme==="dark";
@@ -127,7 +129,8 @@ export function createScene(root: HTMLElement) {
       if(complete){
         studio.mountLogo(logo,[ambient,key,rim,fill]);
         studio.update(frame,bufferWidth,bufferHeight,{x:artRect.left-heroRect.left,y:artRect.top-heroRect.top,width:artRect.width,height:artRect.height},dark);
-        pointerOnLogo=studio.localPointer((input.x-heroRect.left)/bufferWidth*2-1,-((input.y-heroRect.top)/bufferHeight*2-1),logo,pointer);
+        const sceneRect=heroRect;
+        pointerOnLogo=studio.localPointer((input.x-sceneRect.left)/bufferWidth*2-1,-((input.y-sceneRect.top)/bufferHeight*2-1),logo,pointer);
       }else{
         pointer.set(((frame.x+.5)*innerWidth-r.left)/r.width*2-1,-(((frame.y+.5)*innerHeight-r.top)/r.height*2-1),.5).unproject(camera);
         direction.copy(pointer).sub(camera.position).normalize();pointer.copy(camera.position).addScaledVector(direction,-camera.position.z/direction.z);logo.updateMatrixWorld();logo.worldToLocal(pointer);
