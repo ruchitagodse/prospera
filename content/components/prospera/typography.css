@@ -1,0 +1,8 @@
+/* Shared typography roles across every full-size page. */
+.prospera{--type-label:14px;--type-body:18px;--type-ui:14px}
+.prospera .p-page-stage :is(.p-label,.p-section-label,.p-edition,.p-about-scene-top,.p-about-scene-top .p-section-label,.p-about-scene-bottom,.p-work-topline,.p-work-topline span:last-child,.p-work-preview-label,.p-work-drag-hint,.p-case-back,.p-case-media figcaption,.p-case-footnote>span,.p-offering-number,.p-offering-scope>span,.p-inquiry-index,.p-inquiry-close,.p-inquiry-prompt span,.p-inquiry-details label,.p-inquiry-direct>span,.p-scene-panel-copy>span){font-size:var(--type-label);line-height:1.5;letter-spacing:.1em}
+.prospera .p-page-stage :is(.p-header-note,.p-header-actions button,.p-cta,.p-hero-bottom,.p-footer-bottom,.p-work-caption>a,.p-work-filter,.p-work-filter button,.p-case-back button,.p-inquiry-submit,.p-offering-scope a,.p-offerings-next a){font-size:var(--type-ui);line-height:1.5}
+.prospera .p-page-stage :is(.p-intro p,.p-scene-panel-copy p,.p-inquiry-aside,.p-offerings-opening>p,.p-offering summary p,.p-offering-note,.p-offering-scope li,.p-offerings-next p,.p-work-caption p,.p-case-heading>p,.p-case-info dd){font-size:var(--type-body);line-height:1.65}
+@media(max-width:700px){.prospera{--type-label:12px;--type-body:16px;--type-ui:14px}.prospera .p-page-stage .p-header-actions button:first-child{font-size:0}}
+/* Navigation thumbnails retain their scaled page proportions. */
+.p-preview-page{--type-label:14px;--type-body:18px;--type-ui:14px}

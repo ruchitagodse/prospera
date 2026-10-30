@@ -1,0 +1,42 @@
+.p-about-discs{position:relative;isolation:isolate;min-height:calc(100svh - 100px);padding:28px 4.2% 0;display:flex;flex-direction:column;overflow:hidden;background:var(--paper);color:var(--ink)}
+.p-about-discs::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at var(--light-x,60%) var(--light-y,40%),#caaa7222,transparent 65%)}
+.p-discs-top,.p-discs-bottom{display:flex;align-items:center;justify-content:space-between;gap:20px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.p-discs-top>span:first-child,.p-discs-eyebrow{color:var(--gold)}
+.p-discs-layout{display:grid;grid-template-columns:minmax(300px,.85fr) minmax(0,1.5fr);gap:6%;align-items:center;flex:1;min-height:590px;padding:65px 0 70px}
+.p-discs-story{position:relative;z-index:4;animation:p-disc-story-in .6s ease both}
+.p-discs-eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.p-page-stage[data-page=studio] .p-about .p-discs-story h1{font:400 clamp(54px,5.6vw,92px)/.98 'Times New Roman',serif;letter-spacing:-.055em;margin:25px 0 30px;outline:none;text-wrap:balance}
+.p-about .p-discs-story p{font:18px/1.75 Arial,sans-serif;color:var(--muted);max-width:500px;margin:20px 0 0;opacity:1}
+.p-discs-role{font-size:13px;letter-spacing:.04em;color:var(--gold)}
+.p-discs-controls{display:flex;align-items:center;gap:22px;margin-top:38px;font-size:12px}
+.p-discs-controls button{width:44px;height:44px;border:1px solid var(--line);border-radius:50%;background:none;font-size:20px;transition:background .3s,border-color .3s}
+.p-discs-controls button:hover{background:color-mix(in srgb,var(--gold) 15%,transparent);border-color:var(--gold)}
+.p-discs-gallery{height:500px;position:relative;perspective:1200px;touch-action:pan-y}
+.p-about-disc{position:absolute;width:clamp(240px,28vw,460px);aspect-ratio:1;top:50%;left:38%;padding:0;border:0;background:none;border-radius:50%;transform-style:preserve-3d;cursor:pointer;transition:transform 1s cubic-bezier(.22,1,.36,1),opacity .7s,filter .7s}
+.p-about-disc[data-position="0"]{z-index:3;transform:translate(-50%,-50%) rotateY(-16deg) rotateZ(-8deg);opacity:1}
+.p-about-disc[data-position="1"]{z-index:2;transform:translate(25%,-76%) rotateY(-32deg) rotateZ(12deg) scale(.74);opacity:.7}
+.p-about-disc[data-position="2"]{z-index:1;transform:translate(-15%,3%) rotateY(28deg) rotateZ(-18deg) scale(.63);opacity:.52}
+.p-about-disc:hover{opacity:1;filter:brightness(1.12)}
+.p-disc-face{position:absolute;inset:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at var(--spot-x,30%) var(--spot-y,20%),#856633,#25251c 45%,#0b0d09 78%);border:2px solid #caaa72;box-shadow:inset 0 0 0 7px #15170e,inset 0 0 0 8px #caaa7255,8px 12px 0 #302a1d,14px 28px 35px #0003;color:#d7b579;animation:p-disc-float 7s ease-in-out infinite}
+.p-disc-face::after{content:"";position:absolute;inset:0;border-radius:inherit;background:conic-gradient(from 30deg,transparent,#fff3,transparent 30%,#caaa721a,transparent 70%,#fff2,transparent);pointer-events:none;mix-blend-mode:screen}
+.p-about-disc:nth-child(2) .p-disc-face{animation-delay:-2s}.p-about-disc:nth-child(3) .p-disc-face{animation-delay:-4s}
+.p-disc-rim{position:absolute;top:12%;font-size:10px;letter-spacing:.18em;text-transform:uppercase}
+.p-disc-note{position:absolute;bottom:13%;font-size:9px;letter-spacing:.12em;text-transform:uppercase}
+.p-disc-face svg{width:68%;height:68%;stroke:#d7b579;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(var(--shade,4px) 6px 2px #0008)}
+.p-disc-words{font:400 clamp(40px,5.5vw,80px)/.85 'Times New Roman',serif;letter-spacing:-.06em;text-align:left;text-shadow:var(--shade,4px) 6px 2px #0008}.p-disc-words em{font-weight:400}
+.p-disc-monogram{font:italic clamp(80px,12vw,180px)/1 Georgia,serif;letter-spacing:-.12em;padding-right:.1em;text-shadow:var(--shade,4px) 6px 2px #0008}
+.p-discs-bottom{border-top:1px solid var(--line);padding:24px 0;margin-top:auto}.p-discs-bottom a{color:var(--gold)}
+@keyframes p-disc-float{0%,100%{transform:translateY(0) rotateZ(0)}50%{transform:translateY(-12px) rotateZ(2deg)}}
+@keyframes p-disc-story-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media(max-width:850px){.p-discs-layout{grid-template-columns:1fr;gap:10px;padding:20px 0 40px;min-height:0}.p-discs-gallery{grid-row:1;height:390px}.p-about-disc{width:280px;left:42%}.p-page-stage[data-page=studio] .p-about .p-discs-story h1{font-size:56px}.p-about .p-discs-story p{font-size:17px;max-width:650px}.p-discs-top>span:last-child{display:none}.p-discs-bottom{font-size:9px}.p-discs-bottom>span:first-child{display:none}.p-about-discs{min-height:calc(100svh - 76px);padding:24px 6% 0}.p-disc-words{font-size:52px}.p-disc-monogram{font-size:116px}}
+@media(max-width:420px){.p-discs-gallery{height:330px}.p-about-disc{width:230px;left:40%}.p-disc-rim{font-size:8px}.p-disc-note{font-size:7px}.p-disc-words{font-size:44px}.p-disc-monogram{font-size:100px}}
+.p-about-discs[data-reduced=true] *{animation:none!important;transition:none!important}
+.p-discs-heading-float{animation:p-about-heading-drift 7s ease-in-out infinite;transform-origin:left center}
+@keyframes p-about-heading-drift{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-6px,0)}}
+.p-discs-wave{height:48px;margin:0 -4.6%;position:relative;overflow:hidden;pointer-events:none;flex-shrink:0}
+.p-discs-wave svg{position:absolute;left:-25%;bottom:0;width:150%;height:100%;fill:var(--gold);opacity:.065;animation:p-about-wave 12s ease-in-out infinite alternate}
+.p-discs-wave svg+svg{opacity:.04;animation-duration:17s;animation-direction:alternate-reverse}
+@keyframes p-about-wave{from{transform:translate3d(-6%,3px,0) scaleY(.8)}to{transform:translate3d(6%,-2px,0) scaleY(1.12)}}
+.p-discs-bottom{position:relative;border-top-color:color-mix(in srgb,var(--gold) 15%,transparent)}
+@media(max-width:850px){.p-discs-wave{height:32px;margin:0 -7%}}
+@media(prefers-reduced-motion:reduce){.p-about-discs *{animation:none!important;transition:none!important}}

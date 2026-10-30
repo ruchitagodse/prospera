@@ -73,7 +73,7 @@ export function createWorkScene(host: HTMLElement, projects: readonly WorkProjec
   let pointerSeen=false;
   const pointer=new THREE.Vector2(),raycaster=new THREE.Raycaster(),projected=new THREE.Vector3();
   const modulo=(value:number,count:number)=>((value%count)+count)%count;
-  const resize=()=>{const r=host.getBoundingClientRect();width=r.width;height=r.height;if(width<1||height<1)return;renderer.setSize(width,height,false);camera.aspect=width/height;camera.fov=width<600?46:34;camera.position.z=width<600?8.7:8.8;camera.lookAt(0,2.1,0);camera.setViewOffset(width,height,0,height*(width<600?.07:.1),width,height);camera.updateProjectionMatrix();};
+  const resize=()=>{const r=host.getBoundingClientRect();width=r.width;height=r.height;if(width<1||height<1)return;const compact=width<600;renderer.setSize(width,height,false);camera.aspect=width/height;camera.fov=compact?52:34;camera.position.z=compact?9.5:8.8;camera.lookAt(0,compact?2:2.1,0);camera.setViewOffset(width,height,0,height*(compact?.02:.1),width,height);camera.updateProjectionMatrix();};
   const observer=new ResizeObserver(resize);observer.observe(host);resize();
   const tick=(time:number,delta:number)=>{
     if(lost||document.hidden||host.closest<HTMLElement>(".p-page-stage")?.dataset.page!=="work"||host.closest<HTMLElement>(".prospera")?.dataset.intro!=="complete"||host.getBoundingClientRect().width===0)return;
