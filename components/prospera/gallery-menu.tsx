@@ -26,6 +26,8 @@ export function GalleryMenu({ source, active, snapshot, reduced, onSelect, onClo
   const dialog = useRef<HTMLDialogElement>(null);
   const rail = useRef<HTMLDivElement>(null);
   const busy = useRef(false);
+  const openingMenu = useRef(false);
+  const pendingPage = useRef<PageId | null>(null);
   const finish = useRef<(page?: PageId) => void>(() => {});
 
   useLayoutEffect(() => {
@@ -159,7 +161,7 @@ export function GalleryMenu({ source, active, snapshot, reduced, onSelect, onClo
       Object.assign(clone.style, { left: `${box.left}px`, top: `${box.top}px`, width: `${box.width}px`, height: `${box.height}px` });
       element.append(clone); return clone;
     };
-    busy.current = true;
+    busy.current = true;openingMenu.current=true;pendingPage.current=null;
     const context = gsap.context(() => {
       gsap.fromTo(".p-gallery-backdrop", { opacity: 0 }, { opacity: 1, duration });
       gsap.fromTo(cards.filter(card => card !== activeCard), { y: 65, opacity: 0 }, { y: 0, opacity: 1, duration: duration*.8, stagger: reduced?0:.06, delay: duration*.25 });
@@ -167,12 +169,12 @@ export function GalleryMenu({ source, active, snapshot, reduced, onSelect, onClo
       gsap.set(activeCard, { visibility: "hidden" });
       gsap.fromTo(opening, { x: -bounds.left, y: -bounds.top, scaleX: innerWidth/bounds.width, scaleY: innerHeight/bounds.height }, {
         x: 0, y: 0, scaleX: 1, scaleY: 1, duration, ease: "power3.inOut",
-        onComplete: () => { busy.current = false; gsap.set(activeCard, { visibility: "visible" }); opening.remove(); },
+        onComplete: () => { busy.current = false;openingMenu.current=false;gsap.set(activeCard, { visibility: "visible" }); opening.remove();const requested=pendingPage.current;pendingPage.current=null;if(requested!==null)finish.current(requested); },
       });
       gsap.fromTo(".p-gallery-top,.p-gallery-caption", { opacity: 0 }, { opacity: 1, duration: duration*.5, delay: duration*.6 });
     }, element);
     finish.current = (page = active) => {
-      if (busy.current) return;
+      if (busy.current) {if(openingMenu.current)pendingPage.current=page;return;}
       busy.current = true;
       const selected = cards.find(card => card.dataset.page === page)!;
       selected.scrollIntoView({ behavior: "instant", block: "nearest", inline: "center" });
@@ -195,6 +197,7 @@ export function GalleryMenu({ source, active, snapshot, reduced, onSelect, onClo
     const escape = (event: Event) => { event.preventDefault(); finish.current(); };
     element.addEventListener("cancel", escape);
     return () => {
+      openingMenu.current=false;pendingPage.current=null;
       up();stopEdgeScroll();track.removeEventListener("pointerdown",down);track.removeEventListener("pointermove",move);track.removeEventListener("pointerup",up);track.removeEventListener("pointercancel",up);track.removeEventListener("pointerleave",stopEdgeScroll);track.removeEventListener("click",click,true);track.removeEventListener("wheel",wheel);track.removeEventListener("dragstart",nativeDrag);
       context.revert(); gsap.killTweensOf(cards); element.querySelectorAll(".p-gallery-flight").forEach(node=>{gsap.killTweensOf(node);node.remove();}); observer.disconnect(); element.removeEventListener("cancel",escape); element.close(); clonedPreviews.forEach(copy=>copy.remove());
     };

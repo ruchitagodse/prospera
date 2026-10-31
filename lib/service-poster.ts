@@ -2,7 +2,6 @@ import { CanvasTexture, SRGBColorSpace } from "three";
 
 const palette = { cream: "#f1ecdf", ink: "#242b22", gold: "#c9aa6d", olive: "#a8ac91", burgundy: "#6c333d" };
 const backgrounds = ["#242820", "#a8ac91", "#1d211b", "#6c333d", "#e7ddc6"];
-const titles = [["WEBSITE", "DEVELOPMENT"], ["BUSINESS APPS", "& CRM"], ["WORKFLOW", "AUTOMATION"], ["E-COMMERCE", "SOLUTIONS"], ["BROCHURE &", "DIGITAL DESIGN"]];
 type Context = CanvasRenderingContext2D;
 
 function box(c: Context, x: number, y: number, w: number, h: number, color: string, radius = 12) {
@@ -22,7 +21,7 @@ function browser(c: Context, x: number, y: number, w: number, h: number) {
   box(c, x + w * .3, y + 8, w * .4, 13, "#f1ecdf", 5);
 }
 function label(c: Context, value: string, x: number, y: number, color: string) {
-  c.fillStyle = color; c.font = "12px monospace"; c.fillText(value, x, y);
+  c.fillStyle = color; c.font = "16px monospace"; c.fillText(value, x, y);
 }
 
 function website(c: Context, time: number) {
@@ -116,7 +115,9 @@ function design(c: Context, time: number) {
   text(c, "PROSPERA", -96, -23, 23, palette.gold, "700"); label(c, "BUILD. GROW. PROSPER.", -96, 24, palette.cream); c.restore();
 }
 
-export function createServicePoster(index: number) {
+export function createServicePoster(category: number) {
+  const index = [0, 1, 4][category];
+  const categoryTitles = [["DIGITAL", "PRESENCE."], ["BUSINESS", "SOLUTIONS."], ["CREATIVE &", "BRANDING."]];
   const canvas = document.createElement("canvas"); canvas.width = 512; canvas.height = 760;
   const c = canvas.getContext("2d")!;
   const texture = new CanvasTexture(canvas); texture.colorSpace = SRGBColorSpace;
@@ -125,8 +126,8 @@ export function createServicePoster(index: number) {
     const light = c.createRadialGradient(420, 80, 0, 250, 300, 580); light.addColorStop(0, "#f1ecdf13"); light.addColorStop(1, "#f1ecdf00"); c.fillStyle = light; c.fillRect(0, 0, 512, 760);
     c.save(); [website, crm, automation, commerce, design][index](c, time); c.restore();
     const ink = index === 1 || index === 4 ? palette.ink : palette.cream;
-    label(c, "PROSPERA / DIGITAL STUDIO", 26, 37, ink); label(c, `0${index + 1} / MADE FOR YOUR BUSINESS`, 26, 89, ink);
-    titles[index].forEach((title, line) => { c.fillStyle = line === 1 && index !== 1 && index !== 4 ? palette.gold : ink; c.font = `900 ${index === 4 ? 47 : 52}px Arial`; c.fillText(title, 26, 627 + line * 57, 460); });
+    label(c, "PROSPERA / DIGITAL STUDIO", 26, 37, ink); label(c, `0${category + 1} / MADE FOR YOUR BUSINESS`, 26, 89, ink);
+    categoryTitles[category].forEach((title, line) => { c.fillStyle = line === 1 && index !== 1 && index !== 4 ? palette.gold : ink; c.font = `900 ${index === 4 ? 54 : 60}px Arial`; c.fillText(title, 26, 627 + line * 61, 460); });
     rule(c, 26, 711, 460, `${ink}45`); label(c, "EXPLORE THE SERVICE", 26, 737, ink); text(c, "↗", 463, 739, 22, ink);
     texture.needsUpdate = true;
   };

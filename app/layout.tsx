@@ -3,19 +3,19 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://prospera-m35u.vercel.app"),
-  title: "PROSPERA | Websites, CRMs & Automation",
-  description: "Websites, CRMs and automation for growing businesses. Thoughtful design and practical technology from PROSPERA, Mumbai.",
+  title: "PROSPERA | Digital Solutions & Creative Studio",
+  description: "We build. We simplify. We help businesses grow. Digital presence, business solutions and creative design from PROSPERA, Mumbai.",
   openGraph: {
     type: "website",
     siteName: "PROSPERA",
-    title: "PROSPERA | Websites, CRMs & Automation",
-    description: "Websites, CRMs and automation for growing businesses. Thoughtful design and practical technology from Mumbai.",
-    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "PROSPERA — Websites, CRMs and automation for growing businesses" }],
+    title: "PROSPERA | Digital Solutions & Creative Studio",
+    description: "Digital presence, business solutions and creative branding for growing businesses. Thoughtful design and practical technology from Mumbai.",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "PROSPERA — Digital solutions and creative design for growing businesses" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "PROSPERA | Websites, CRMs & Automation",
-    description: "Websites, CRMs and automation for growing businesses.",
+    title: "PROSPERA | Digital Solutions & Creative Studio",
+    description: "Digital solutions and creative design for growing businesses.",
     images: ["/opengraph-image"],
   },
 };

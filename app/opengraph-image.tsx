@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "PROSPERA — Websites, CRMs and automation for growing businesses";
+export const alt = "PROSPERA — Digital solutions and creative design for growing businesses";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -12,8 +12,8 @@ export default function OpenGraphImage() {
         <span style={{ fontSize: 17, color: "#caaa72" }}>Mumbai, India</span>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-        <div style={{ fontSize: 75, lineHeight: 1.08, fontFamily: "serif", maxWidth: 950 }}>Websites, CRMs and automation.</div>
-        <div style={{ fontSize: 29, color: "#caaa72" }}>For growing businesses.</div>
+        <div style={{ fontSize: 75, lineHeight: 1.08, fontFamily: "serif", maxWidth: 950 }}>We build. We simplify.</div>
+        <div style={{ fontSize: 29, color: "#caaa72" }}>We help businesses grow.</div>
       </div>
       <div style={{ display: "flex", borderTop: "1px solid #49402e", paddingTop: 24, fontSize: 18, letterSpacing: 4, color: "#caaa72" }}>BUILD. GROW. PROSPER.</div>
     </div>,

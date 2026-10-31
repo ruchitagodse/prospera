@@ -3,7 +3,7 @@ import gsap from "gsap";
 import { workAsset, type WorkProject } from "@/content/work";
 
 export type WorkCardRect = { left: number; top: number; width: number; height: number };
-export function createWorkScene(host: HTMLElement, projects: readonly WorkProject[], onChange: (index: number) => void, onOpen: (index: number, rect: WorkCardRect) => void) {
+export function createWorkScene(host: HTMLElement, projects: readonly WorkProject[], onChange: (index: number) => void, onOpen: (index: number, rect: WorkCardRect) => void, initialIndex = 0) {
   const canvas = host.querySelector<HTMLCanvasElement>(".p-work-canvas");
   if (!canvas || !projects.length) return null;
   let renderer: THREE.WebGLRenderer;
@@ -52,7 +52,9 @@ export function createWorkScene(host: HTMLElement, projects: readonly WorkProjec
       uHover: { value: 0 }, uHoverUv: { value: new THREE.Vector2(.5,.5) }, uWind: { value: new THREE.Vector2() },
     }, vertexShader: vertex, fragmentShader: fragment }); materials.push(value); return value;
   };
-  const slots = projects.length < 3 ? projects.length : 18;
+  // Each visual lap must contain whole project sets so the card under the
+  // pointer and the selected caption agree after the carousel wraps.
+  const slots = projects.length < 3 ? projects.length : Math.ceil(18 / projects.length) * projects.length;
   for (let i = 0; i < slots; i++) {
     const index = i % projects.length;
     const card = new THREE.Mesh(geometry, material(index,0));card.userData.index=index;scene.add(card);cards.push(card);
@@ -64,7 +66,7 @@ export function createWorkScene(host: HTMLElement, projects: readonly WorkProjec
   const lineMaterial=new THREE.LineBasicMaterial({color:0x9b783e,transparent:true,opacity:.11});scene.add(new THREE.LineSegments(lineGeometry,lineMaterial));
   const arcPoints=[];for(let i=0;i<=120;i++){const angle=(i/120-.5)*Math.PI;arcPoints.push(new THREE.Vector3(Math.sin(angle)*8.8,.65,(Math.cos(angle)-1)*8.8));}
   const arcGeometry=new THREE.BufferGeometry().setFromPoints(arcPoints),arcMaterial=new THREE.LineBasicMaterial({color:0xd8af68,transparent:true,opacity:.6});scene.add(new THREE.Line(arcGeometry,arcMaterial));
-  let current=0,target=0,velocity=0,lastIndex=-1,lastInput=performance.now(),width=1,height=1,lost=false;
+  let current=initialIndex,target=initialIndex,velocity=0,lastIndex=-1,lastInput=performance.now(),width=1,height=1,lost=false;
   let down: { x:number;y:number;target:number;time:number } | null=null, moved=false;
   let opening: THREE.Mesh | null = null;
   const launch = { progress: 0 };

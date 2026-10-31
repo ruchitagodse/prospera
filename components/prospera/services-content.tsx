@@ -5,8 +5,8 @@ import { serviceOfferings } from "@/content/site";
 import type { RibbonController } from "@/lib/services-ribbon";
 import "./services.css";
 
-const codes = ["WEB DEV", "APP / CRM", "WRK FLOW", "E / COMM", "DIG DSGN"];
-const slogans = ["Make an impact.", "All in sync.", "Less repeat.", "Open for business.", "Be seen."];
+const codes = ["DIGITAL", "SYSTEMS", "CREATIVE"];
+const slogans = ["Make an impact.", "Make business simpler.", "Be recognised."];
 
 export function ServicesContent({ active = false, reduced = false }: { active?: boolean; reduced?: boolean }) {
   const host = useRef<HTMLDivElement>(null);
@@ -17,6 +17,10 @@ export function ServicesContent({ active = false, reduced = false }: { active?: 
   const detailArt = useRef<HTMLCanvasElement>(null);
   const [selected, setSelected] = useState<number | null>(null);
   const [grid, setGrid] = useState(false);
+  const move = (direction: number) => {
+    if (controller.current) controller.current.move(direction);
+    else host.current?.scrollBy({ left: direction * 260, behavior: reduced ? "instant" : "smooth" });
+  };
 
   useEffect(() => {
     let disposed = false;
@@ -36,7 +40,7 @@ export function ServicesContent({ active = false, reduced = false }: { active?: 
 
   useEffect(() => {
     const el = host.current;
-    if (!el || !active || grid) return;
+    if (!el || !active || grid || reduced) return;
     let disposed = false;
     import("@/lib/services-ribbon").then(({ createServicesRibbon }) => {
       if (disposed) return;
@@ -82,24 +86,25 @@ export function ServicesContent({ active = false, reduced = false }: { active?: 
 
   return <div className="p-services-view" data-layout={grid ? "grid" : "ribbon"}>
     <div className="p-services-toolbar"><h1 tabIndex={-1}>Services</h1><div><button aria-pressed={!grid} onClick={() => setGrid(false)}>Ribbon</button><span>/</span><button aria-pressed={grid} onClick={() => setGrid(true)}>Grid</button></div><a href="#contact">Let’s talk ↗</a></div>
-    <div ref={host} className="p-services-ribbon" aria-label="Service gallery. Drag or scroll to explore." data-lenis-prevent="true" onKeyDown={event => { if (selected !== null) return; if (event.key === "ArrowRight" || event.key === "ArrowLeft") { event.preventDefault(); controller.current?.move(event.key === "ArrowRight" ? 1 : -1); } }}>
-      {Array.from({ length: 15 }, (_, slot) => { const index = slot % 5, service = serviceOfferings[index], duplicate = slot < 5 || slot > 9;
+    <div ref={host} className="p-services-ribbon" aria-label="Service gallery. Drag or scroll to explore." data-lenis-prevent="true" onKeyDown={event => { if (selected !== null) return; if (event.key === "ArrowRight" || event.key === "ArrowLeft") { event.preventDefault(); move(event.key === "ArrowRight" ? 1 : -1); } }}>
+      {Array.from({ length: serviceOfferings.length * 3 }, (_, slot) => { const index = slot % serviceOfferings.length, service = serviceOfferings[index], duplicate = slot < serviceOfferings.length || slot >= serviceOfferings.length * 2;
         return <article className="p-ribbon-slot" data-service={index} key={slot} aria-hidden={duplicate}>
-          <span className="p-ribbon-label">{service.name}<span>{service.number}</span></span>
+          <span className="p-ribbon-label"><span className="p-ribbon-title">{service.name}</span><span>{service.number}</span></span>
           <button className="p-ribbon-hitbox" tabIndex={duplicate ? -1 : 0} aria-label={`Explore ${service.name}`} aria-haspopup="dialog" onFocus={event => { if (event.currentTarget.matches(":focus-visible")) controller.current?.focus(slot); }} onClick={event => { previousFocus.current = event.currentTarget; setSelected(index); }}>
             <span className="p-ribbon-fallback"><small>PROSPERA / DIGITAL STUDIO</small><b>{service.name}</b><span>{service.name} ↗</span></span><span className="p-ribbon-accessible">{service.name}</span>
           </button>
         </article>;
       })}
     </div>
-    <div className="p-services-cube" aria-hidden="true"><div>{["P", "+", "↗", "P", "+", "↗"].map((face,index) => <span key={index}>{face}</span>)}</div></div>
-    <div className="p-services-footer"><span>PROSPERA <span>EXPERTISE HUB</span></span><p>Websites. Business tools. Automation. Design.</p><span>Drag / Scroll / Click to flip</span></div>
-    <div className="p-ribbon-navigation"><button aria-label="Previous service" onClick={() => controller.current?.move(-1)}>←</button><div ref={progress} className="p-ribbon-progress" aria-hidden="true"><i/></div><button aria-label="Next service" onClick={() => controller.current?.move(1)}>→</button></div>
+    <div className="p-services-dock"><div className="p-services-cube" aria-hidden="true"><div>{["P", "+", "↗", "P", "+", "↗"].map((face,index) => <span key={index}>{face}</span>)}</div></div>
+    <div className="p-ribbon-navigation"><button aria-label="Previous service" onClick={() => move(-1)}>←</button><div ref={progress} className="p-ribbon-progress" aria-hidden="true"><i/></div><button aria-label="Next service" onClick={() => move(1)}>→</button></div>
+    </div>
+    <div className="p-services-footer"><span>PROSPERA <span>EXPERTISE HUB</span></span><p>Digital presence. Business solutions. Creative & branding.</p><span className="p-services-hint">Drag / Scroll <span>Click to explore</span></span></div>
     {service && <div className="p-service-detail-shade" onClick={event => { if (event.target === event.currentTarget) dismiss(); }}>
       <div role="dialog" aria-modal="true" aria-labelledby="p-service-detail-title" className="p-service-detail" data-service={selected} data-lenis-prevent="true" onKeyDown={event => { if (event.key === "Escape") dismiss(); if (event.key === "Tab") { const elements=event.currentTarget.querySelectorAll<HTMLElement>("button,a");const first=elements[0],last=elements[elements.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();} } }}>
         <div className="p-service-detail-top"><button ref={close} onClick={dismiss} aria-label="Close service details">CLS <span>×</span></button><span>{codes[selected!]} / {service.number}</span><span>PROSPERA</span></div>
         <div className="p-service-detail-layout"><div className="p-service-detail-art" aria-hidden="true"><canvas ref={detailArt} width={512} height={480}/></div>
-          <div className="p-service-detail-copy"><span className="p-service-detail-eyebrow">{slogans[selected!]}</span><h2 id="p-service-detail-title">{service.name}</h2><p>{service.description}</p><ul>{service.includes.map((item,index) => <li key={item}><span>0{index+1}</span>{item}</li>)}</ul><a href="#contact" onClick={() => setSelected(null)}>Discuss this service <span>↗</span></a></div>
+          <div className="p-service-detail-copy"><span className="p-service-detail-eyebrow">{slogans[selected!]}</span><h2 id="p-service-detail-title">{service.name}</h2><p>{service.description}</p><ul>{service.includes.map((item,index) => <li key={item}><span>0{index+1}</span>{item}</li>)}</ul><a href="#contact" onClick={() => { window.dispatchEvent(new CustomEvent("prospera:service", { detail: service.name })); setSelected(null); }}>Discuss this service <span>↗</span></a></div>
         </div><div className="p-service-detail-bottom"><span>PROSPERA / EXPERTISE HUB</span><span>BUILT AROUND YOUR BUSINESS ↗</span></div>
       </div>
     </div>}

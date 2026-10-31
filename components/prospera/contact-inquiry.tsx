@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useId, useRef, useState } from "react";
+import { FormEvent, useEffect, useId, useRef, useState } from "react";
 import { contactScopes as scopes } from "@/content/contact";
 
 function SocialIcon({ type }: { type: "instagram" | "whatsapp" | "email" }) {
@@ -21,6 +21,14 @@ export function ContactInquiry() {
   const [sendError, setSendError] = useState("");
   const scopeId = useId();
   const sheet=useRef<HTMLElement>(null);
+  useEffect(() => {
+    const chooseService = (event: Event) => {
+      const service = (event as CustomEvent<string>).detail;
+      if (scopes.includes(service)) { setSelected([service]); setSent(false); }
+    };
+    window.addEventListener("prospera:service", chooseService);
+    return () => window.removeEventListener("prospera:service", chooseService);
+  }, []);
 
   const toggleScope = (scope: string) => {
     setSelected((current) => current.includes(scope) ? current.filter((item) => item !== scope) : [...current, scope]);
@@ -29,7 +37,7 @@ export function ContactInquiry() {
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (sending) return;
-    if (!event.currentTarget.checkValidity()) { setMissing(true); return; }
+    if (!event.currentTarget.reportValidity() || selected.length === 0) { setMissing(true); return; }
     setMissing(false);
     const values = new FormData(event.currentTarget);
     setSending(true); setSendError("");
@@ -37,7 +45,7 @@ export function ContactInquiry() {
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: values.get("name"), email: values.get("email"), message: values.get("message"), website: values.get("website"), scopes: selected }),
+        body: JSON.stringify({ name: values.get("name"), business: values.get("business"), email: values.get("email"), whatsapp: values.get("whatsapp"), budget: values.get("budget"), message: values.get("message"), website: values.get("website"), scopes: selected }),
         signal: AbortSignal.timeout(30000),
       });
       const result = await response.json();
@@ -57,10 +65,11 @@ export function ContactInquiry() {
     </div>
 
     <div className="p-inquiry-intro">
-      <h1 id="contact-title">Let’s build<br/>together.</h1>
+      <h1 id="contact-title">Let’s Build Something That Moves Your Business <em>Forward.</em></h1>
       <div className="p-inquiry-aside">
         <p>Tell us about your project and we’ll get in touch.</p>
         <p className="p-inquiry-response">We aim to reply within 24 hours.</p>
+        <a className="p-whatsapp-cta" href="https://wa.me/919372321663?text=Hello%20PROSPERA%2C%20I%27d%20like%20to%20discuss%20a%20project." target="_blank" rel="noreferrer">Let’s chat on WhatsApp <span>↗</span></a>
         <div className="p-inquiry-direct"><span>Or reach us directly</span><div>
           <a href="https://www.instagram.com/prospera____/" target="_blank" rel="noreferrer" aria-label="Instagram: @prospera____" title="@prospera____"><SocialIcon type="instagram"/></a>
           <a href="https://wa.me/919372321663" target="_blank" rel="noreferrer" aria-label="Contact PROSPERA on WhatsApp"><SocialIcon type="whatsapp"/></a>
@@ -71,7 +80,7 @@ export function ContactInquiry() {
 
     {sent ? <div className="p-inquiry-thanks" role="status"><span>Inquiry sent</span><h2>Thank you.<br/><em>We’ll be in touch.</em></h2>{confirmationSent && <p>We’ve also sent a thank-you email. Please check your inbox or spam folder.</p>}<button onClick={() => setSent(false)}>Send another inquiry <span>↗</span></button></div> : <form className="p-inquiry-form" aria-busy={sending} noValidate onInput={() => setMissing(false)} onSubmit={submit}>
       <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{display:"none"}}/>
-      <div className="p-inquiry-prompt"><span>01. Scope</span></div>
+      <div className="p-inquiry-prompt"><span>01. Service required · Choose one or more</span></div>
       <fieldset className="p-scope-fieldset">
         <legend className="p-sr-only">What can we help with?</legend>
         {scopes.map((scope) => <label key={scope} htmlFor={`${scopeId}-${scope}`} className={selected.includes(scope) ? "is-selected" : ""}>
@@ -80,9 +89,12 @@ export function ContactInquiry() {
       </fieldset>
       <div className="p-inquiry-details">
         <label>Name<input name="name" required maxLength={120} autoComplete="name" placeholder="Your name"/></label>
+        <label>Business name<input name="business" required maxLength={160} autoComplete="organization" placeholder="Your business"/></label>
         <label>Email<input name="email" required type="email" maxLength={254} autoComplete="email" placeholder="you@company.com"/></label>
+        <label>WhatsApp number<input name="whatsapp" required type="tel" inputMode="tel" maxLength={30} minLength={7} pattern="[+0-9() .\-]{7,30}" autoComplete="tel" placeholder="Include your country code"/></label>
+        <label className="p-inquiry-message">Budget <span>(optional)</span><input name="budget" maxLength={120} placeholder="Your range and currency, if known"/></label>
         <label className="p-inquiry-message">Tell us about your project<textarea name="message" required maxLength={5000} rows={3} placeholder="What would you like to make?"/></label>
-        {missing && <p className="p-inquiry-validation" role="alert">Please add your name, email, and a short message to continue.</p>}
+        {missing && <p className="p-inquiry-validation" role="alert">Please complete the required fields and choose at least one service. Choose “Not sure yet” if you need help deciding.</p>}
         {sendError && <p className="p-inquiry-validation" role="alert">{sendError}</p>}
         <button className="p-inquiry-submit" type="submit" disabled={sending}>{sending ? "Sending…" : "Start the conversation"} <span>↗</span></button>
       </div>

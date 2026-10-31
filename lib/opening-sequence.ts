@@ -4,6 +4,8 @@ import gsap from "gsap";
 export function assembleLoader(root: HTMLElement, reduced: boolean) {
   const context = gsap.context(() => {
     gsap.fromTo('.p-loader-logo-stage',{y:reduced?0:10,opacity:reduced?1:0},{y:0,opacity:1,duration:reduced?0:1.1,ease:'power3.out'});
+    gsap.fromTo('[data-opening-letter]', { opacity: reduced ? 1 : 0 }, { opacity: 1, duration: reduced ? 0 : .85, delay: reduced ? 0 : .15 });
+    gsap.fromTo('[data-opening-arrow-reveal]', { attr: { width: reduced ? 290 : 0 } }, { attr: { width: 290 }, duration: reduced ? 0 : 1, delay: reduced ? 0 : 1.35, ease: 'power2.inOut' });
     gsap.fromTo(".p-loader-center p", { autoAlpha: 0, y: reduced ? 0 : 8 }, { autoAlpha: 1, y: 0, duration: reduced ? 0 : .8, delay: reduced ? 0 : 1.5 });
   }, root);
   return () => context.revert();
@@ -30,11 +32,11 @@ export function revealExperience(root: HTMLElement, reduced: boolean, onUncovere
   }
   const context = gsap.context(() => {
     const timeline = gsap.timeline({ onComplete });
-    gsap.set([words, ...extras], { autoAlpha: 0 });
+    gsap.set([...words, ...extras], { autoAlpha: 0 });
     if (reduced) {
       timeline.to(loader, { autoAlpha: 0, duration: .15 });
       timeline.call(onUncovered);
-      timeline.set([words, art, ...extras], { autoAlpha: 1, clearProps: "transform" });
+      timeline.set([...words, ...(art ? [art] : []), ...extras], { autoAlpha: 1, clearProps: "transform" });
       return;
     }
     const canvas = root.querySelector<HTMLCanvasElement>(".p-gl");
@@ -54,7 +56,6 @@ export function revealExperience(root: HTMLElement, reduced: boolean, onUncovere
       timeline.to(blend,{value:1,duration:.95,ease:'sine.inOut',onUpdate:()=>{root.dataset.logoBlend=String(blend.value);}},1.45);
       timeline.call(()=>{flying?.remove();delete root.dataset.logoBlend;},[],2.4);
     }
-    timeline.fromTo('.p-entry-orb',{scale:.1,autoAlpha:0},{scale:1,autoAlpha:1,duration:.28,ease:'power2.out'},0);
     timeline.fromTo(portal,{'--opening-radius':'0px'},{'--opening-radius':`${Math.hypot(innerWidth,innerHeight)*.65}px`,duration:1.45,ease:'power3.inOut'},.25);
     timeline.fromTo('.p-header, .p-hero-top',{y:-8},{y:0,autoAlpha:1,duration:.75,stagger:.07},.8);
     timeline.fromTo(words,{yPercent:45,rotation:1},{yPercent:0,rotation:0,autoAlpha:1,duration:1,stagger:.05,ease:'power3.out'},.85);

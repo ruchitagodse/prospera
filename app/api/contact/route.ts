@@ -24,11 +24,17 @@ export async function POST(request: Request) {
   const name = typeof data.name === "string" ? data.name.trim() : "";
   const email = typeof data.email === "string" ? data.email.trim() : "";
   const message = typeof data.message === "string" ? data.message.trim() : "";
+  const business = typeof data.business === "string" ? data.business.trim() : "";
+  const whatsapp = typeof data.whatsapp === "string" ? data.whatsapp.trim() : "";
+  const budget = typeof data.budget === "string" ? data.budget.trim() : "";
+  if (!business || business.length > 160 || /[\r\n]/.test(business) || !/^[+\d() .-]{7,30}$/.test(whatsapp) || whatsapp.replace(/\D/g, "").length < 7 || budget.length > 120 || /[\r\n]/.test(budget)) {
+    return reply("Please enter your business name, a valid WhatsApp number, and an optional budget of up to 120 characters.", 400);
+  }
   if (!name || name.length > 120 || /[\r\n]/.test(name) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254 || !message || message.length > 5000) {
     return reply("Please enter a valid name, email, and project description (up to 5,000 characters).", 400);
   }
   const scopes = data.scopes ?? [];
-  if (!Array.isArray(scopes) || scopes.length > contactScopes.length || scopes.some(scope => typeof scope !== "string" || !contactScopes.includes(scope))) {
+  if (!Array.isArray(scopes) || scopes.length === 0 || scopes.length > contactScopes.length || scopes.some(scope => typeof scope !== "string" || !contactScopes.includes(scope))) {
     return reply("Please choose a valid project scope.", 400);
   }
 
@@ -49,7 +55,7 @@ export async function POST(request: Request) {
       to: process.env.CONTACT_TO_EMAIL,
       replyTo: { name, address: email },
       subject: "New project inquiry — PROSPERA",
-      text: `New inquiry from the PROSPERA website\n\nName: ${name}\nEmail: ${email}\nScope: ${scopes.length ? scopes.join(", ") : "Not specified"}\n\nProject description:\n${message}`,
+      text: `New inquiry from the PROSPERA website\n\nName: ${name}\nBusiness: ${business}\nEmail: ${email}\nWhatsApp: ${whatsapp}\nBudget: ${budget || "Not specified"}\nService required: ${scopes.join(", ")}\n\nProject description:\n${message}`,
       disableFileAccess: true,
       disableUrlAccess: true,
     });

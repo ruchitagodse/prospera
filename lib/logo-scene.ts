@@ -12,6 +12,7 @@ export function createScene(root: HTMLElement) {
   try { renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true}); } catch { return null; }
   renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.toneMapping=THREE.ACESFilmicToneMapping;
   renderer.autoClear=false;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;renderer.shadowMap.autoUpdate=false;
+  renderer.localClippingEnabled=true;
   const studio=createArchitecturalStudio(renderer,root);
   const scene=new THREE.Scene(), camera=new THREE.PerspectiveCamera(34,1,1,3000), logo=new THREE.Group(); scene.add(logo);
   const face=new THREE.MeshPhysicalMaterial({color:0x37332a,metalness:.72,roughness:.3,clearcoat:.35});
@@ -19,7 +20,9 @@ export function createScene(root: HTMLElement) {
   const sides=new THREE.MeshStandardMaterial({color:0x82602d,metalness:.7,roughness:.35});
   const svg=source.cloneNode(true) as SVGElement;
   svg.querySelectorAll("path").forEach(p=>p.setAttribute("fill",p.getAttribute("fill")==="currentColor"?"#24241f":"#c6a263"));
-  const parts:{mesh:THREE.Mesh;delay:number}[]=[], surface:number[]=[], seeds:number[]=[];
+  const arrowPlane=new THREE.Plane();
+  let arrowMin=Infinity,arrowMax=-Infinity;
+  const parts:{mesh:THREE.Mesh;delay:number;arrow:boolean}[]=[], surface:number[]=[], seeds:number[]=[];
   try {
     new SVGLoader().parse(new XMLSerializer().serializeToString(svg)).paths.forEach(path=>{
       const arrow=path.color.getHex()===0xc6a263;
@@ -27,9 +30,10 @@ export function createScene(root: HTMLElement) {
         const geometry=new THREE.ExtrudeGeometry(shape,{depth:22,bevelEnabled:true,bevelSegments:4,steps:1,bevelSize:1,bevelThickness:1.3,curveSegments:24});
         geometry.computeBoundingBox(); const bounds=geometry.boundingBox!;
         if(bounds.min.y>420){geometry.dispose();return;}
-        const delay=arrow?0:bounds.min.x>345?.7+(bounds.min.x-345)*.003:1.25;
+        const delay=arrow?1.35:bounds.min.x>345?.35+(bounds.min.x-345)*.002:.1;
+        if(arrow){arrowMin=Math.min(arrowMin,bounds.min.x-372);arrowMax=Math.max(arrowMax,bounds.max.x-372);}
         geometry.translate(-372,-312,-11);
-        const mesh=new THREE.Mesh(geometry,[arrow?gold:face,sides]); mesh.scale.y=-1;logo.add(mesh);parts.push({mesh,delay});
+        const mesh=new THREE.Mesh(geometry,[arrow?gold:face,arrow?gold:sides]); mesh.scale.y=-1;logo.add(mesh);parts.push({mesh,delay,arrow});
         const positions=geometry.getAttribute("position"),normals=geometry.getAttribute("normal");
         for(let i=0;i<positions.count;i+=3){
           if(normals.getZ(i)<.9)continue;
@@ -91,8 +95,8 @@ export function createScene(root: HTMLElement) {
     render(frame:Frame){
       if(lost)return;if(started===null)started=frame.time;const age=frame.time-started,dark=root.dataset.intro==="waiting"||root.dataset.theme==="dark";
       face.color.setHex(dark?0x544936:0x2c2922);
-      parts.forEach(({mesh,delay})=>{const t=THREE.MathUtils.smoothstep(age,delay,delay+1.1);mesh.scale.set(1,-Math.max(.001,t),1);mesh.position.y=(1-t)*-35;});
       const complete=root.dataset.intro!=="waiting";
+      parts.forEach(({mesh,delay,arrow})=>{const t=THREE.MathUtils.smoothstep(age,delay,delay+.85);mesh.visible=!arrow||complete||age>=delay;mesh.scale.set(1,arrow?-1:-Math.max(.001,t),1);mesh.position.y=arrow?0:(1-t)*-12;});
       if (complete && heroStarted === null) heroStarted = frame.time;
       const particleReveal = complete ? THREE.MathUtils.smoothstep(frame.time-(heroStarted??frame.time),.5,2.4) : 0;
       logoParticles.visible = particleReveal > 0;
@@ -114,6 +118,14 @@ export function createScene(root: HTMLElement) {
       }
       logo.rotation.set(complete?-.08+Math.sin(frame.time*.35)*.025-frame.y*.06:-.08-frame.y*.2,complete?-.24+Math.sin(frame.time*.28)*.055+frame.x*.1:-.24+frame.x*.4,Math.sin(frame.time*.3)*.012);
       logo.position.y=Math.sin(frame.time*.5)*3;
+      // Reveal the existing curved arrow from its tail toward its tip.
+      // Transform the clipping plane with the logo so pointer tilt stays aligned.
+      gold.clippingPlanes=complete?null:[arrowPlane];
+      if(!complete){
+        const draw=THREE.MathUtils.smoothstep(age,1.35,2.35);
+        logo.updateWorldMatrix(true,false);
+        arrowPlane.set(new THREE.Vector3(-1,0,0),THREE.MathUtils.lerp(arrowMin-1,arrowMax+1,draw)).applyMatrix4(logo.matrixWorld);
+      }
       material.uniforms.uTime.value=frame.time;material.uniforms.uAge.value=age;material.uniforms.uOpacity.value=.92*entryBlend*particleReveal;
       const heroRect=hero.getBoundingClientRect();
       if(complete&&(heroRect.width===0||heroRect.bottom<0||heroRect.top>innerHeight))return;

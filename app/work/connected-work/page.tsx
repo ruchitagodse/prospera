@@ -1,5 +1,6 @@
-import ExperienceShell from "@/components/prospera/experience-shell";
+import { redirect } from "next/navigation";
 
-export default function ProjectPage() {
-  return <ExperienceShell initialPage="work" initialProject="connected-work"/>;
+// Previous illustrative portfolio entries now lead to the actual project index.
+export default function LegacyProjectPage() {
+  redirect("/work");
 }

@@ -4,9 +4,9 @@ import gsap from "gsap";
 import "./about-discs.css";
 
 const stories=[
-{label:"The purpose",title:"Less complexity.",body:"We simplify the way businesses work through custom software, CRM systems, apps, and automation — making data, operations, and everyday tasks easier to manage."},
-{label:"The vision",title:"Room to prosper.",body:"We bring technology and creativity together — from websites and SaaS products to distinctive branding, brochures, and original creatives that keep businesses recognised and remembered."},
-{label:"The person",title:"Ruchita Godse",body:"I’m Ruchita, the person behind PROSPERA. I bring design and technology together to make everyday business simpler. From your first idea to the final detail, I work with you to build something useful and personal."}
+{label:"The purpose",title:"Room to prosper.",body:"Businesses have great ideas, valuable services and ambitions. But managing operations, building an online presence and presenting their work can get complicated.\n\nThat's where PROSPERA comes in."},
+{label:"The belief",title:"Space to grow.",body:"We bring technology and creativity together to help businesses build their digital presence, simplify everyday operations and communicate their value.\n\nOur belief: Every business deserves the right tools and space to grow."},
+{label:"The person",title:"The Person Behind PROSPERA.",body:"I'm Ruchita, founder of PROSPERA.\n\nI believe technology should make business simpler, not more complicated. With a background in software development and a passion for design, I bring both worlds together to create meaningful digital solutions.\n\nFrom the first conversation to the final delivery, I work closely with businesses to turn their ideas into something useful, thoughtful and impactful."}
 ];
 export function AboutSpotlight({active,reduced}:{active:boolean;reduced:boolean}){
  const [selected,setSelected]=useState(0);
@@ -45,7 +45,7 @@ export function AboutSpotlight({active,reduced}:{active:boolean;reduced:boolean}
  <div className="p-discs-story" key={selected} id="about-story" role="tabpanel" aria-labelledby={'disc-'+selected}>
  <span className="p-discs-eyebrow">0{selected+1} / {story.label}</span><div className="p-discs-heading-float"><h1 tabIndex={-1}>{story.title}</h1></div>
  {selected===2&&<span className="p-discs-role">Founder · PROSPERA</span>}
- <p>{story.body}</p>
+ {story.body.split("\n\n").map(paragraph => <p key={paragraph}>{paragraph}</p>)}
  <div className="p-discs-controls"><button type="button" onClick={()=>select(selected-1)} aria-label="Previous story">←</button><span>0{selected+1} / 03</span><button type="button" onClick={()=>select(selected+1)} aria-label="Next story">→</button></div>
  </div>
  <div className="p-discs-gallery" role="tablist" aria-label="Explore the studio" onKeyDown={e=>{
