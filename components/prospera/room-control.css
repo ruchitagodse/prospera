@@ -7,7 +7,7 @@
 .p-room-gesture-icon{display:none}
 @media(hover:none){.p-room-control-hint{opacity:.75;transform:translate(-50%,0);font-size:9px}}
 @media(max-width:700px){
-  .p-room-interaction .p-room-control-hint{bottom:clamp(6px,calc(20svh - 120px),48px);gap:7px;font-size:12px;line-height:1.5;color:var(--muted);opacity:1;transform:translate(-50%,0)}
+  .p-room-interaction .p-room-control-hint{top:min(calc(42% + clamp(70px,22vw,105px)),calc(100% - 48px));bottom:auto;gap:8px;font-size:12px;line-height:1.5;color:var(--muted);opacity:1;transform:translate(-50%,0)}
   .p-room-control-hint>span:first-child{display:flex;align-items:center;justify-content:center;gap:12px;font-size:10px;letter-spacing:.13em}
   .p-room-control-hint>span:first-child::before,.p-room-control-hint>span:first-child::after{content:"";width:19px;height:1px;background:var(--line)}
   .p-room-control-hint>span:last-child{display:flex;align-items:center;justify-content:center;gap:6px;font:italic 12px/1.5 Georgia,serif}

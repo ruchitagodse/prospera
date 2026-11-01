@@ -309,7 +309,7 @@ export function createArchitecturalStudio(renderer: THREE.WebGLRenderer, root: H
           const retreat=distance*.45;
           logoCamera.position.z+=retreat;
           logoCamera.position.y+=retreat*.1;
-          const logoCenter=art.height<240?.52:.58;
+          const logoCenter=.42;
           logoCamera.setViewOffset(width,height,width/2-(art.x+art.width*.5),height/2-(art.y+art.height*logoCenter),width,height);
           logoCamera.updateProjectionMatrix();
         }

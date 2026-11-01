@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useRef, type RefObject } from "react";
 import gsap from "gsap";
+import { Wordmark } from "./wordmark";
 
 export type PageId = "home" | "studio" | "services" | "work" | "contact";
 export const pages: { id: PageId; label: string; href: string }[] = [
@@ -205,10 +206,10 @@ export function GalleryMenu({ source, active, snapshot, reduced, onSelect, onClo
 
   return <dialog ref={dialog} className="p-gallery" aria-label="Explore PROSPERA">
     <div className="p-gallery-backdrop" aria-hidden="true"/>
-    <div className="p-gallery-top"><span>PROSPERA <small>Explore PROSPERA</small></span><button type="button" onClick={()=>finish.current()} aria-label="Close navigation">Close ×</button></div>
+    <div className="p-gallery-top"><span><Wordmark className="p-gallery-wordmark"/><small>Explore PROSPERA</small></span><button type="button" onClick={()=>finish.current()} aria-label="Close navigation">Close ×</button></div>
     <div ref={rail} className="p-gallery-rail" data-lenis-prevent="true">
       {pages.map((page,index)=><a href={page.href} key={page.id} className="p-gallery-card" data-page={page.id} aria-label={`Open ${page.label}`} aria-current={active===page.id?"page":undefined} onClick={event=>{event.preventDefault();finish.current(page.id);}}>
-        <div className="p-gallery-window" aria-hidden="true"><div className="p-gallery-preview-header" data-dark={page.id === "work"}><b>PROSPERA</b><span>Digital studio<br/>Mumbai, India</span><small>{String(index+1).padStart(2,"0")} / {page.label}</small></div>{page.id === "contact" ? <ContactPreview/> : null}</div>
+        <div className="p-gallery-window" aria-hidden="true"><div className="p-gallery-preview-header" data-dark={page.id === "work"}><Wordmark className="p-gallery-preview-wordmark"/><span>Digital studio<br/>Mumbai, India</span><small>{String(index+1).padStart(2,"0")} / {page.label}</small></div>{page.id === "contact" ? <ContactPreview/> : null}</div>
         <span className="p-gallery-caption"><small>0{index+1}</small>{page.label}<i>↗</i></span>
       </a>)}
     </div>

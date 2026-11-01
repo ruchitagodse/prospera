@@ -6,3 +6,6 @@
 @media(max-width:700px){.prospera{--type-label:12px;--type-body:16px;--type-ui:14px}.prospera .p-page-stage .p-header-actions button:first-child{font-size:0}}
 /* Navigation thumbnails retain their scaled page proportions. */
 .p-preview-page{--type-label:14px;--type-body:18px;--type-ui:14px}
+.p-gallery-top>span{display:flex;align-items:center}
+.p-gallery-wordmark{display:block;width:145px;height:auto;aspect-ratio:630/90;flex:none}
+.p-gallery-preview-wordmark{display:block;width:31%;max-width:184px;height:auto;aspect-ratio:630/90;flex:none}
