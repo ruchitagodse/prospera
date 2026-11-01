@@ -1,0 +1,94 @@
+/* Continue the opening record artwork through an editorial studio story. */
+.p-about-narrative{--story-space:clamp(64px,8vw,128px);font-family:Arial,sans-serif}
+.p-about-narrative section{padding:var(--story-space) 7%;position:relative}
+.p-about-narrative .p-story-label{font:11px/1.6 Arial,sans-serif;letter-spacing:.13em;text-transform:uppercase;color:var(--gold)}
+.p-page-stage[data-page=studio] .p-about .p-about-narrative h2{font:400 clamp(42px,5.3vw,80px)/1.06 'Times New Roman',serif;letter-spacing:-.045em;margin:24px 0 30px;text-wrap:balance}
+.p-about-narrative h2 em{font-weight:400;color:var(--gold)}
+.p-page-stage[data-page=studio] .p-about .p-about-narrative p{font:16px/1.8 Arial,sans-serif;color:var(--muted);opacity:1;margin:0;text-wrap:pretty}
+.p-about-narrative .p-studio-note{background:#11150f;color:#f1eddf;--gold:#d2b47d;--muted:#c1c2b3;overflow:hidden;padding-top:42px;padding-bottom:48px}
+.p-note-top{display:flex;justify-content:space-between;gap:24px;position:relative;z-index:1}
+.p-note-top>span:last-child{font-size:11px;color:#c1c2b3}
+.p-page-stage[data-page=studio] .p-about .p-studio-note h2{font-size:clamp(44px,6.7vw,106px);max-width:1150px;margin:65px 0 48px;position:relative;z-index:1}
+.p-studio-note::after{content:"";position:absolute;width:560px;aspect-ratio:1;border:1px solid #d2b47d23;border-radius:50%;right:-200px;top:20%;box-shadow:0 0 0 45px #d2b47d06,0 0 0 90px #d2b47d05,0 0 0 135px #d2b47d04;pointer-events:none}
+.p-note-bottom{display:flex;justify-content:space-between;align-items:center;gap:36px;position:relative;z-index:1}
+.p-note-asterisk{font:70px/1 Georgia,serif;color:#d2b47d}
+.p-page-stage[data-page=studio] .p-about .p-note-bottom p{max-width:420px;font-size:16px}
+.p-story-founder{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:10%;border-bottom:1px solid var(--line)}
+.p-founder-sleeve{background:#181c14;color:#d2b47d;aspect-ratio:4/4.7;padding:26px;display:flex;flex-direction:column;position:relative;isolation:isolate;overflow:hidden;transform:rotate(-3deg);box-shadow:12px 18px 0 color-mix(in srgb,var(--gold) 12%,transparent)}
+.p-sleeve-top{display:flex;justify-content:space-between;font:9px/1.5 Arial,sans-serif;letter-spacing:.12em;border-bottom:1px solid #d2b47d40;padding-bottom:17px}
+.p-founder-record{margin:auto;width:92%;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;background:repeating-radial-gradient(circle at center,#171b14 0 3px,#34372a 4px,#171b14 5px 7px);border:1px solid #9d885a;box-shadow:8px 14px 24px #0006}
+.p-founder-record::before{content:"";position:absolute;inset:18%;border-radius:50%;background:linear-gradient(130deg,#d8bc84,#9a793e);border:1px solid #e5cea0}
+.p-founder-record>span{position:relative;font:italic clamp(70px,9vw,150px)/1 Georgia,serif;letter-spacing:-.13em;padding-right:.13em;color:#24291a}
+.p-founder-record>i{position:absolute;width:10px;height:10px;border-radius:50%;background:#171b14;top:65%;left:calc(50% - 5px)}
+.p-sleeve-bottom{display:flex;justify-content:space-between;align-items:end;font:12px/1.6 Arial,sans-serif;margin-top:20px}
+.p-sleeve-mark{font:52px/1 Georgia,serif}
+.p-page-stage[data-page=studio] .p-about .p-story-founder-copy h2{font-size:clamp(40px,4.2vw,66px)}
+.p-page-stage[data-page=studio] .p-about .p-story-founder-copy .p-story-lead{font:24px/1.4 'Times New Roman',serif;color:var(--ink);margin-bottom:24px}
+.p-page-stage[data-page=studio] .p-about .p-story-founder-copy p+p{margin-top:18px}
+.p-founder-signoff{display:flex;align-items:center;gap:25px;padding-top:30px;margin-top:30px;border-top:1px solid var(--line)}
+.p-founder-signoff>span{font:italic 34px/1.2 Georgia,serif;color:var(--gold)}
+.p-founder-signoff small{font:11px/1.7 Arial,sans-serif;color:var(--muted);border-left:1px solid var(--line);padding-left:25px}
+.p-studio-principles,.p-studio-process{display:grid;grid-template-columns:1fr 1.2fr;gap:10%;border-bottom:1px solid var(--line)}
+.p-page-stage[data-page=studio] .p-about .p-story-section-head h2{font-size:clamp(40px,4vw,62px)}
+.p-story-link{display:inline-flex;gap:40px;align-items:center;padding:12px 0;border-bottom:1px solid var(--gold);font-size:13px}
+.p-story-link span{font-size:22px;color:var(--gold)}
+.p-principle-list article{display:grid;grid-template-columns:35px 1fr 38px;gap:20px;padding:30px 0;border-top:1px solid var(--line)}
+.p-principle-list article:first-child{padding-top:0;border-top:0}
+.p-principle-number{font:11px/1.7 Arial,sans-serif;color:var(--gold);padding-top:8px}
+.p-page-stage[data-page=studio] .p-about .p-principle-list h3{font:400 clamp(25px,2.5vw,36px)/1.15 'Times New Roman',serif;letter-spacing:-.025em;margin:0 0 16px}
+.p-principle-symbol{font:38px/1 Georgia,serif;color:var(--gold)}
+.p-studio-process{background:color-mix(in srgb,var(--gold) 5%,var(--paper))}
+.p-page-stage[data-page=studio] .p-about .p-story-section-head>p{max-width:320px}
+.p-process-sessions details{border-top:1px solid var(--line)}
+.p-process-sessions details:last-child{border-bottom:1px solid var(--line)}
+.p-process-sessions summary{display:grid;grid-template-columns:28px 1fr 30px;gap:20px;align-items:center;cursor:pointer;list-style:none;padding:25px 0;min-height:100px}
+.p-process-sessions summary::-webkit-details-marker{display:none}
+.p-session-number{font:11px Arial,sans-serif;color:var(--gold);align-self:start;padding-top:6px}
+.p-session-title{font:28px/1.2 'Times New Roman',serif;letter-spacing:-.02em}
+.p-session-title small{display:block;font:12px/1.6 Arial,sans-serif;color:var(--muted);letter-spacing:0;margin-top:8px}
+.p-session-toggle{width:28px;height:28px;border:1px solid var(--line);border-radius:50%;position:relative}
+.p-session-toggle::before,.p-session-toggle::after{content:"";position:absolute;width:10px;height:1px;background:var(--gold);left:8px;top:13px}
+.p-session-toggle::after{transform:rotate(90deg);transition:transform .2s}
+.p-process-sessions details[open] .p-session-toggle::after{transform:rotate(0deg)}
+.p-process-sessions details[open] .p-session-title{color:var(--gold)}
+.p-session-body{padding:0 35px 30px 48px}
+.p-session-body>span{display:block;font:11px/1.6 Arial,sans-serif;color:var(--gold);margin-top:22px}
+.p-session-body i{font-style:normal;font-size:20px;margin-right:10px}
+.p-about-narrative .p-studio-invitation{padding-bottom:28px;display:grid;grid-template-columns:1.4fr 1fr;gap:0 10%;align-items:end;overflow:hidden}
+.p-studio-invitation>.p-story-label{grid-column:1/-1}
+.p-page-stage[data-page=studio] .p-about .p-studio-invitation h2{font-size:clamp(50px,6.5vw,100px);margin-bottom:0}
+.p-invitation-cta{display:flex;align-items:center;justify-content:space-between;gap:24px;font-size:14px;min-height:60px;border-bottom:1px solid var(--gold);margin-top:24px}
+.p-invitation-cta span{font:36px/1 Georgia,serif;color:var(--gold);transition:transform .25s}
+.p-invitation-cta:hover span{transform:translate(4px,-4px)}
+.p-studio-invitation footer{grid-column:1/-1;display:flex;justify-content:space-between;gap:24px;border-top:1px solid var(--line);padding-top:24px;margin-top:90px;color:var(--muted);font:10px/1.7 Arial,sans-serif;letter-spacing:.06em}
+.p-about-narrative a:focus-visible,.p-process-sessions summary:focus-visible{outline:2px solid var(--gold);outline-offset:6px}
+@media(min-width:1600px){.p-about-narrative section{padding-left:max(7%,calc((100vw - 1440px)/2));padding-right:max(7%,calc((100vw - 1440px)/2))}}
+@media(max-width:900px){.p-story-founder{gap:7%}.p-founder-sleeve{padding:18px}.p-studio-principles,.p-studio-process{gap:6%;grid-template-columns:.85fr 1.15fr}.p-principle-list article{grid-template-columns:24px 1fr;gap:14px}.p-principle-symbol{display:none}.p-process-sessions summary{gap:12px}.p-session-body{padding-left:40px;padding-right:0}}
+@media(max-width:650px){.p-about-narrative section{padding:64px 6%}.p-about-narrative .p-studio-note{padding:30px 6% 34px}.p-note-top>span:last-child{display:none}.p-page-stage[data-page=studio] .p-about .p-studio-note h2{font-size:clamp(38px,9.5vw,60px);margin:48px 0 32px}.p-note-bottom{gap:22px;align-items:start}.p-note-asterisk{font-size:42px}.p-page-stage[data-page=studio] .p-about .p-note-bottom p{font-size:14px}.p-studio-note::after{right:-400px}.p-story-founder,.p-studio-principles,.p-studio-process{grid-template-columns:1fr;gap:46px}.p-founder-sleeve{width:min(90%,360px);justify-self:center;padding:22px;aspect-ratio:1/1.1}.p-founder-record>span{font-size:110px}.p-page-stage[data-page=studio] .p-about .p-story-founder-copy h2{font-size:43px}.p-page-stage[data-page=studio] .p-about .p-about-narrative p{font-size:15px}.p-page-stage[data-page=studio] .p-about .p-story-founder-copy .p-story-lead{font-size:23px}.p-page-stage[data-page=studio] .p-about .p-story-section-head h2{font-size:44px}.p-principle-list article{grid-template-columns:28px 1fr;padding:26px 0}.p-page-stage[data-page=studio] .p-about .p-principle-list h3{font-size:29px}.p-session-title{font-size:26px}.p-session-title small{font-size:11px}.p-process-sessions summary{grid-template-columns:24px 1fr 28px;gap:12px}.p-session-body{padding-left:36px}.p-about-narrative .p-studio-invitation{grid-template-columns:1fr;gap:30px;padding-bottom:24px}.p-page-stage[data-page=studio] .p-about .p-studio-invitation h2{font-size:clamp(46px,12vw,72px);margin:0}.p-studio-invitation footer{margin-top:35px;display:block;font-size:9px}.p-studio-invitation footer span{display:block}.p-studio-invitation footer span+span{margin-top:6px}}
+@media(prefers-reduced-motion:reduce){.p-session-toggle::after,.p-invitation-cta span{transition:none}}
+.prospera[data-reduced=true] .p-session-toggle::after,.prospera[data-reduced=true] .p-invitation-cta span{transition:none}
+
+/* Motion is enabled after entry, only on the active About page. */
+.p-about-narrative[data-motion=on] [data-reveal=waiting]{visibility:hidden}
+.p-about-narrative[data-motion=on] .p-founder-sleeve{transform:perspective(1000px) translateY(var(--sleeve-shift,0px)) rotate(-3deg) rotateX(var(--sleeve-x,0deg)) rotateY(var(--sleeve-y,0deg));transition:transform .65s cubic-bezier(.22,1,.36,1)}
+.p-about-narrative[data-motion=on] .p-founder-record{animation:p-studio-record-turn 42s linear infinite;animation-play-state:paused}
+.p-about-narrative[data-motion=on] .p-note-asterisk{animation:p-studio-record-turn 24s linear infinite;animation-play-state:paused}
+.p-about-narrative[data-motion=on] .p-studio-note::after{animation:p-studio-ring-drift 12s ease-in-out infinite alternate;animation-play-state:paused}
+.p-about-narrative[data-motion=on] [data-in-view=true] :is(.p-founder-record,.p-note-asterisk),.p-about-narrative[data-motion=on] .p-studio-note[data-in-view=true]::after{animation-play-state:running}
+.prospera[data-overlay=true] .p-about-narrative[data-motion=on] :is(.p-founder-record,.p-note-asterisk),.prospera[data-overlay=true] .p-about-narrative[data-motion=on] .p-studio-note::after{animation-play-state:paused}
+.p-principle-symbol{transition:transform .55s cubic-bezier(.22,1,.36,1),color .3s}
+.p-principle-list article:hover .p-principle-symbol{transform:rotate(18deg) scale(1.12)}
+.p-process-sessions details[open] .p-session-body{animation:p-studio-session-in .45s cubic-bezier(.22,1,.36,1) both}
+.p-process-sessions summary{transition:padding-left .3s}
+.p-process-sessions summary:hover{padding-left:7px}
+.p-story-link span{transition:transform .3s}
+.p-story-link:hover span{transform:translate(4px,-4px)}
+@keyframes p-studio-record-turn{to{transform:rotate(360deg)}}
+@keyframes p-studio-ring-drift{from{transform:translate3d(0,-16px,0) scale(.96)}to{transform:translate3d(-44px,20px,0) scale(1.08)}}
+@keyframes p-studio-session-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.p-about-narrative[data-motion=on] [data-reveal=waiting]{visibility:visible}.p-about-narrative :is(.p-founder-record,.p-note-asterisk,.p-session-body),.p-about-narrative .p-studio-note::after{animation:none!important}.p-about-narrative :is(.p-founder-sleeve,.p-principle-symbol,.p-process-sessions summary,.p-story-link span){transition:none!important}.p-principle-list article:hover .p-principle-symbol,.p-story-link:hover span{transform:none}}
+.prospera[data-reduced=true] .p-about-narrative :is(.p-founder-record,.p-note-asterisk,.p-session-body),.prospera[data-reduced=true] .p-about-narrative .p-studio-note::after{animation:none}
+/* Leave room for the sleeve captions around the circular artwork. */
+.p-founder-sleeve{aspect-ratio:4/5}
+.p-founder-record{width:80%;flex-shrink:0}
+@media(max-width:650px){.p-founder-sleeve{aspect-ratio:4/5}}

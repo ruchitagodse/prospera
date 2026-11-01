@@ -5,6 +5,9 @@
 .p-room-interaction[data-logo-hover=true]{cursor:pointer}
 .p-room-interaction[data-dragging=true]{cursor:grabbing}
 @media(hover:none){.p-room-control-hint{opacity:.75;transform:translate(-50%,0);font-size:9px}}
-@media(max-height:700px){.p-room-control-hint>span:last-child{display:none}}
+@media(max-width:700px){
+  .p-room-interaction .p-room-control-hint{bottom:4px;gap:3px;font-size:12px;line-height:1.5;color:var(--ink);opacity:1;transform:translate(-50%,0)}
+  .p-room-control-hint>span:first-child{font-size:10px;letter-spacing:.1em}
+}
 .prospera[data-reduced=true] .p-room-control-hint{display:none}
 @media(prefers-reduced-motion:reduce){.p-room-control-hint{display:none;transition:none}}
