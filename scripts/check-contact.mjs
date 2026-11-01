@@ -41,6 +41,8 @@ try {
   const mail = handler.deliveries[0].text;
   for (const field of [valid.business, valid.whatsapp, valid.budget, valid.scopes[0], valid.message]) assert.ok(mail.includes(field));
   assert.deepEqual(await (await submit({ ...valid, budget: "" })).json(), { ok: true, confirmationSent: true });
+  assert.deepEqual(await (await submit({ ...valid, scopes: ["Social Media Management"] })).json(), { ok: true, confirmationSent: true });
+  assert.ok(handler.deliveries.some(mail => mail.text.includes("Social Media Management")));
   handler.setConfirmationFailure();
   assert.deepEqual(await (await submit(valid)).json(), { ok: true, confirmationSent: false });
   console.log("Contact checks passed: validation, origin protection, unavailable mail, all enquiry fields, optional budget, and confirmation failure.");

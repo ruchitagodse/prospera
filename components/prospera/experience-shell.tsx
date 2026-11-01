@@ -16,6 +16,7 @@ import "./experience.css";
 import "./typography.css";
 import "./enhancements.css";
 import "./about-scene.css";
+import "./home-viewport.css";
 import { logoInkPath, logoGoldPath, logoViewBox } from "./logo-geometry";
 
 
@@ -44,7 +45,7 @@ function Mark({ className = "", wordmark = false, assembly = false, emblem = fal
 }
 
 export default function ExperienceShell({ initialPage = "home", initialProject = null }: { initialPage?: PageId; initialProject?: string | null }) {
-  const { theme, setTheme, sound, setSound, reduced, setReduced, systemReduced } = usePreferences();
+  const { theme, setTheme, sound, setSound, reduced } = usePreferences();
   const [progress, setProgress] = useState(0);
   const [ready, setReady] = useState(false);
   const [entered, setEntered] = useState(false);
@@ -203,6 +204,6 @@ export default function ExperienceShell({ initialPage = "home", initialProject =
       <footer id="contact"><ContactInquiry/></footer></main>
     </div>
     {panel === "menu" && <GalleryMenu source={stage} active={page} snapshot={menuSnapshot} reduced={reduced} onSelect={navigate} onClose={closeMenu}/>}
-    <dialog ref={overlay} className={`p-dialog ${panel === "menu" ? "p-dialog-menu" : ""}`} aria-label={panel === "menu" ? "Navigation" : "Settings"} onCancel={() => setPanel(null)} onClick={(event) => { if (event.target === overlay.current) setPanel(null); }}><div className="p-fluid-lens" aria-hidden="true"/><canvas key="fluid-wake-v2" className="p-pointer-trail" aria-hidden="true" data-active="0"/><div className="p-dialog-inner"><div className="p-dialog-top"><span className="p-label">Make it your own</span><button onClick={() => setPanel(null)} aria-label="Close panel">Close ×</button></div><div className="p-preferences"><div><span>Appearance<small>Choose your atmosphere</small></span><button onClick={swapTheme}>{theme === "light" ? "Light ☼" : "Dark ☾"}</button></div><div><span>Sound<small>Musical notes on every tap and click</small></span><button aria-pressed={sound} onClick={() => { const next = !sound; setSound(next); enableSound(next); if (next) tone(); }}>{sound ? "On" : "Off"}</button></div><div><span>Reduce motion<small>{systemReduced ? "Enabled by your device settings" : "A calmer browsing experience"}</small></span><button aria-pressed={reduced} disabled={systemReduced} onClick={() => setReduced(!reduced)}>{reduced ? "On" : "Off"}</button></div></div></div></dialog>
+    <dialog ref={overlay} className={`p-dialog ${panel === "menu" ? "p-dialog-menu" : ""}`} aria-label={panel === "menu" ? "Navigation" : "Settings"} onCancel={() => setPanel(null)} onClick={(event) => { if (event.target === overlay.current) setPanel(null); }}><div className="p-fluid-lens" aria-hidden="true"/><canvas key="fluid-wake-v2" className="p-pointer-trail" aria-hidden="true" data-active="0"/><div className="p-dialog-inner"><div className="p-dialog-top"><span className="p-label">Make it your own</span><button onClick={() => setPanel(null)} aria-label="Close panel">Close ×</button></div><div className="p-preferences"><div><span>Appearance<small>Choose your atmosphere</small></span><button onClick={swapTheme}>{theme === "light" ? "Light ☼" : "Dark ☾"}</button></div><div><span>Sound<small>Musical notes on every tap and click</small></span><button aria-pressed={sound} onClick={() => { const next = !sound; setSound(next); enableSound(next); if (next) tone(); }}>{sound ? "On" : "Off"}</button></div></div></div></dialog>
   </div>;
 }

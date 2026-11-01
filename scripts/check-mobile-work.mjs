@@ -55,13 +55,13 @@ try {
       }
     }
     // Make every lazy-loaded case image actually request its source.
-    const images = page.locator('.p-work-case .p-case-media img');
+    const images = page.locator('.p-project-story img');
     const imageCount = await images.count();
     for (let j = 0; j < imageCount; j++) {
       await images.nth(j).scrollIntoViewIfNeeded();
       await images.nth(j).evaluate(el => el.decode());
     }
-    if (i === 0 || i === 4) await page.locator('.p-case-pair').first().screenshot({ path: path.join(output, `${project.slug}-media.png`) });
+    if (i === 0 || i === 4) await page.locator('.p-story-preview').first().screenshot({ path: path.join(output, `${project.slug}-media.png`) });
     await page.locator('.p-case-back button').click();
     await page.waitForURL('**/work');
     const restored = await page.locator('.p-work-caption h2').textContent();
@@ -92,7 +92,7 @@ try {
     assert.ok(controls.rect.right <= controls.width + 1 && controls.rect.left >= -1, 'Carousel controls overflow');
   }
   await page.locator('.p-work-filter summary').click();
-  await page.getByRole('button', { name: /Branding & Creative Design/ }).click();
+  await page.getByRole('button', { name: /Creative & Branding/ }).click();
   assert.equal(await page.locator('.p-work-caption h2').textContent(), 'Branding and Festival Creatives');
   await page.locator('.p-work-caption>a').click();
   await page.waitForURL('**/work/branding-festival-creatives');
@@ -176,11 +176,11 @@ try {
     await page.goto(`${base}/work/fitness-application`, { waitUntil: 'networkidle' });
     await ready();
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.locator('.p-case-pair').first().scrollIntoViewIfNeeded();
-    await page.locator('.p-case-pair').first().screenshot({ path: path.join(output, 'fitness-media-phone.png') });
+    await page.locator('.p-story-preview').scrollIntoViewIfNeeded();
+    await page.locator('.p-story-preview').screenshot({ path: path.join(output, 'fitness-media-phone.png') });
     await page.setViewportSize({ width: 1440, height: 1000 });
-    const desktop = await page.locator('.p-case-pair').first().evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length);
-    assert.equal(desktop, 2, 'Desktop retains paired screenshots');
+    const desktop = await page.locator('.p-story-explorer').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length);
+    assert.equal(desktop, 2, 'Desktop retains the workflow selector beside the focused preview');
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({ path: path.join(output, 'desktop-1440.png') });
     console.log('Normal motion: 21 carousel steps, card tap, touch swipe, menu and contact navigation passed. Desktop composition retained.');

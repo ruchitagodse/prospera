@@ -1,7 +1,8 @@
 import { CanvasTexture, SRGBColorSpace } from "three";
+import { serviceOfferings } from "@/content/site";
 
 const palette = { cream: "#f1ecdf", ink: "#242b22", gold: "#c9aa6d", olive: "#a8ac91", burgundy: "#6c333d" };
-const backgrounds = ["#242820", "#a8ac91", "#1d211b", "#6c333d", "#e7ddc6"];
+const backgrounds = ["#242820", "#a8ac91", "#1d211b", "#6c333d", "#e7ddc6", "#242820", "#6c333d"];
 type Context = CanvasRenderingContext2D;
 
 function box(c: Context, x: number, y: number, w: number, h: number, color: string, radius = 12) {
@@ -115,19 +116,93 @@ function design(c: Context, time: number) {
   text(c, "PROSPERA", -96, -23, 23, palette.gold, "700"); label(c, "BUILD. GROW. PROSPER.", -96, 24, palette.cream); c.restore();
 }
 
+function interfaceDesign(c: Context, time: number) {
+  c.save(); c.translate(256, 330 + Math.sin(time * .65) * 6); c.rotate(-.035);
+  shadow(c); box(c, -225, -174, 450, 340, palette.cream, 12); c.shadowColor = "transparent";
+  box(c, -225, -174, 450, 34, "#e0dccf", 12);
+  text(c, "Interface study", -207, -152, 13, palette.ink, "700");
+  text(c, "Design   /   Prototype", 63, -152, 11, "#6e7561");
+  // A design workspace with a low-fidelity wireframe and a linked mobile prototype.
+  box(c, -211, -126, 78, 276, "#e0dccf", 5);
+  text(c, "LAYERS", -201, -106, 9, "#6e7561", "700");
+  ["Page", "Header", "Content", "Action"].forEach((name, i) => {
+    if (i === 2) box(c, -205, -93 + i * 31, 66, 24, palette.olive, 3);
+    text(c, name, -198, -77 + i * 31, 10);
+  });
+  box(c, -117, -110, 172, 229, "#faf7ef", 3);
+  text(c, "01 / WIREFRAME", -112, -117, 9, "#6e7561");
+  box(c, -105, -97, 147, 16, "#d9dacb", 2);
+  for (let i = 0; i < 2; i++) box(c, -105, -65 + i * 11, 122 - i * 25, 5, "#b8bba8", 1);
+  box(c, -105, -28, 147, 61, "#e0dccf", 2);
+  c.strokeStyle = "#a8ac91"; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(-105, -28); c.lineTo(42, 33); c.moveTo(42, -28); c.lineTo(-105, 33); c.stroke();
+  for (let i = 0; i < 3; i++) rule(c, -105, 49 + i * 10, 132 - i * 15, "#b8bba8");
+  box(c, -105, 88, 87, 18, palette.olive, 3);
+  c.strokeStyle = palette.gold; c.lineWidth = 2; c.strokeRect(-110, -70, 132, 33);
+  for (const x of [-113, 19]) for (const y of [-73, -40]) box(c, x, y, 6, 6, palette.cream, 0);
+  c.strokeStyle = palette.gold; c.lineWidth = 2;
+  c.beginPath(); c.moveTo(-15, 98); c.bezierCurveTo(95, 98, 35, -22, 96, -22); c.stroke();
+  c.beginPath(); c.moveTo(88, -28); c.lineTo(96, -22); c.lineTo(88, -16); c.stroke();
+  box(c, 104, -109, 97, 231, palette.ink, 15);
+  box(c, 110, -102, 85, 217, "#faf7ef", 10); box(c, 136, -96, 32, 4, palette.ink, 3);
+  text(c, "Your workspace", 118, -72, 10, palette.ink, "700");
+  box(c, 118, -57, 69, 48, palette.olive, 4);
+  for (let i = 0; i < 3; i++) { box(c, 118, 2 + i * 27, 16, 17, "#ded5bf", 3); rule(c, 141, 7 + i * 27, 41, "#a8ac91"); rule(c, 141, 13 + i * 27, 29, "#c9cbbd"); }
+  box(c, 118, 88, 69, 17, palette.ink, 4); text(c, "Continue", 131, 100, 8, palette.cream);
+  text(c, "02 / PROTOTYPE", 104, 139, 9, "#6e7561");
+  c.restore();
+  c.save(); c.translate(175, 519 + Math.sin(time * .65 + 1) * 5); c.rotate(.035);
+  shadow(c); box(c, -114, -30, 228, 59, palette.ink, 7); c.shadowColor = "transparent";
+  text(c, "COMPONENTS", -99, -10, 9, palette.cream, "700");
+  [palette.cream, palette.olive, palette.gold, palette.burgundy].forEach((color, i) => box(c, -99 + i * 25, 0, 17, 17, color, 4));
+  box(c, 19, 0, 78, 17, palette.gold, 8); text(c, "Aa / Button", 28, 12, 9);
+  c.restore();
+}
+
+function socialMedia(c: Context, time: number) {
+  c.save(); c.translate(244, 313 + Math.sin(time * .6) * 6); c.rotate(-.045);
+  browser(c, -215, -164, 430, 310);
+  text(c, "Content calendar", -194, -111, 21, palette.ink, "700");
+  text(c, "Plan. Create. Publish.", -193, -89, 11, "#737a67");
+  const weekdays = ["MON", "TUE", "WED", "THU", "FRI"];
+  weekdays.forEach((day, col) => {
+    text(c, day, -193 + col * 79, -59, 9, "#737a67", "700");
+    for (let row = 0; row < 2; row++) {
+      const x = -196 + col * 79, y = -46 + row * 85;
+      box(c, x, y, 70, 76, "#e0dccf", 4);
+      if ((row + col) % 2 === 0) {
+        box(c, x + 5, y + 6, 60, 36, [palette.olive, palette.gold, palette.burgundy][col % 3], 3);
+        text(c, ["POST", "REEL", "STORY"][col % 3], x + 10, y + 57, 8, palette.ink, "700");
+        rule(c, x + 10, y + 65, 36, "#a8ac91");
+      }
+    }
+  });
+  c.restore();
+  c.save(); c.translate(368, 401 + Math.sin(time * .6 + 1) * 7); c.rotate(.075);
+  shadow(c); box(c, -79, -125, 158, 264, palette.ink, 21); c.shadowColor = "transparent";
+  box(c, -72, -118, 144, 250, palette.cream, 16); box(c, -23, -111, 46, 5, palette.ink, 3);
+  text(c, "PROSPERA", -58, -84, 12, palette.ink, "700");
+  box(c, -60, -68, 120, 127, palette.burgundy, 3);
+  c.fillStyle = palette.cream; c.font = "24px Georgia"; c.fillText("Your next", -49, -25); c.fillText("story.", -49, 2);
+  c.strokeStyle = palette.gold; c.lineWidth = 2; c.beginPath(); c.arc(17, 42, 23, Math.PI, 0); c.stroke();
+  text(c, "Create a connection.", -58, 88, 10, palette.ink, "700");
+  rule(c, -58, 101, 102, "#a8ac91"); rule(c, -58, 111, 76, "#a8ac91");
+  c.restore();
+}
+
 export function createServicePoster(category: number) {
-  const index = [0, 1, 4][category];
-  const categoryTitles = [["DIGITAL", "PRESENCE."], ["BUSINESS", "SOLUTIONS."], ["CREATIVE &", "BRANDING."]];
+  const service = serviceOfferings[category];
+  const index = service.artwork;
   const canvas = document.createElement("canvas"); canvas.width = 512; canvas.height = 760;
   const c = canvas.getContext("2d")!;
   const texture = new CanvasTexture(canvas); texture.colorSpace = SRGBColorSpace;
   const draw = (time: number) => {
     c.clearRect(0, 0, 512, 760); c.fillStyle = backgrounds[index]; c.fillRect(0, 0, 512, 760);
     const light = c.createRadialGradient(420, 80, 0, 250, 300, 580); light.addColorStop(0, "#f1ecdf13"); light.addColorStop(1, "#f1ecdf00"); c.fillStyle = light; c.fillRect(0, 0, 512, 760);
-    c.save(); [website, crm, automation, commerce, design][index](c, time); c.restore();
+    c.save(); [website, crm, automation, commerce, design, interfaceDesign, socialMedia][index](c, time); c.restore();
     const ink = index === 1 || index === 4 ? palette.ink : palette.cream;
     label(c, "PROSPERA / DIGITAL STUDIO", 26, 37, ink); label(c, `0${category + 1} / MADE FOR YOUR BUSINESS`, 26, 89, ink);
-    categoryTitles[category].forEach((title, line) => { c.fillStyle = line === 1 && index !== 1 && index !== 4 ? palette.gold : ink; c.font = `900 ${index === 4 ? 54 : 60}px Arial`; c.fillText(title, 26, 627 + line * 61, 460); });
+    service.posterTitle.forEach((title, line) => { c.fillStyle = line === 1 && index !== 1 && index !== 4 ? palette.gold : ink; c.font = `900 ${index === 4 ? 54 : 60}px Arial`; c.fillText(title, 26, 627 + line * 61, 460); });
     rule(c, 26, 711, 460, `${ink}45`); label(c, "EXPLORE THE SERVICE", 26, 737, ink); text(c, "↗", 463, 739, 22, ink);
     texture.needsUpdate = true;
   };

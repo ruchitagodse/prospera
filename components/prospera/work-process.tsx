@@ -3,10 +3,9 @@
 import { useEffect, useRef } from "react";
 
 const steps = [
-  ["Discover", "Understand the business, requirements and challenges."],
-  ["Plan", "Define the right strategy and solution."],
-  ["Build", "Design, develop, test and refine."],
-  ["Deliver", "Launch the solution and provide support."],
+  ["Build", "Turn your ideas into thoughtful websites, applications and brand experiences."],
+  ["Grow", "Strengthen your presence and simplify daily operations with connected digital tools."],
+  ["Prosper", "Keep improving with ongoing refinement and support as your business evolves."],
 ];
 
 export function WorkProcess({ active, reduced }: { active: boolean; reduced: boolean }) {
