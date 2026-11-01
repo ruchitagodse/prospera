@@ -10,7 +10,6 @@ export function createArchitecturalStudio(renderer: THREE.WebGLRenderer, root: H
   const logoCamera = new THREE.PerspectiveCamera(40, 1, .1, 120);
   logoCamera.rotation.order = "YXZ"; logoCamera.layers.set(1);
   camera.rotation.order = "YXZ"; camera.layers.enable(1);
-  const controls = createStudioControls(root);
   const architecture = new THREE.Group(); scene.add(architecture);
   const sculpture = new THREE.Group(); architecture.add(sculpture);
   sculpture.position.set(0,2.1,.8); sculpture.scale.setScalar(.0148);
@@ -217,7 +216,8 @@ export function createArchitecturalStudio(renderer: THREE.WebGLRenderer, root: H
   });
   const leafHomes=leaves.map(item=>item.position.clone());
 
-  scene.add(new THREE.HemisphereLight(0xfffbf2, 0xb8b1a2, 2));
+  const roomAmbient = new THREE.HemisphereLight(0xfffbf2, 0xb8b1a2, 2);
+  scene.add(roomAmbient);
   const sunlight = new THREE.DirectionalLight(0xfff6e6, .85);
   // Broad, even illumination avoids diagonal wall shadows behind the mark.
   sunlight.position.set(-3, 12, 10); sunlight.castShadow = false;
@@ -251,6 +251,27 @@ export function createArchitecturalStudio(renderer: THREE.WebGLRenderer, root: H
   });
   quietScene.add(new THREE.Mesh(quietGeometry,quietMaterial));
   const raycaster = new THREE.Raycaster(), mouse = new THREE.Vector2(), inverse = new THREE.Matrix4();
+  const logoRaycaster = new THREE.Raycaster(); logoRaycaster.layers.set(1);
+  const logoMouse = new THREE.Vector2();
+  let logoMeshes: THREE.Mesh[] = [];
+  const controls = createStudioControls(root, (x, y) => {
+    const bounds = root.querySelector<HTMLElement>(".p-hero")?.getBoundingClientRect();
+    if (!bounds?.width || !bounds.height || !logoMeshes.length) return false;
+    logoMouse.set((x - bounds.left) / bounds.width * 2 - 1, -(y - bounds.top) / bounds.height * 2 + 1);
+    logoRaycaster.setFromCamera(logoMouse, logoCamera);
+    return logoRaycaster.intersectObjects(logoMeshes, false).length > 0;
+  });
+  const lighting = [
+    { ambient: 1, sun: 1, practical: 1, warmth: 0, color: 0xfff6e6 },
+    { ambient: .88, sun: .78, practical: 1.35, warmth: .5, color: 0xffd9a0 },
+    { ambient: .55, sun: .25, practical: 1.7, warmth: .8, color: 0xffc982 },
+  ];
+  const lightingState = { ambient: 1, sun: 1, practical: 1, warmth: 0 };
+  const lightTarget = new THREE.Color(), warmTarget = new THREE.Color(0xffc48a);
+  const practicalLights: { light: THREE.PointLight; base: number; color: THREE.Color }[] = [];
+  scene.traverse(object => { if (object instanceof THREE.PointLight) practicalLights.push({ light: object, base: object.intensity, color: object.color.clone() }); });
+  const controlSurface = root.querySelector<HTMLElement>(".p-room-interaction");
+  let lightingSignature = "";
   const localRay = new THREE.Ray(), facePlane = new THREE.Plane(new THREE.Vector3(0,0,1),-12.5);
   let signature = "", darkBefore: boolean | null = null;
   let idleMotion = 1;
@@ -260,6 +281,7 @@ export function createArchitecturalStudio(renderer: THREE.WebGLRenderer, root: H
     mountLogo(logo: THREE.Group, lights: THREE.Light[]) {
       if(logo.parent===sculpture)return;
       sculpture.add(logo);logo.traverse(object=>object.layers.set(1));
+      logoMeshes = logo.children.filter((object): object is THREE.Mesh => object instanceof THREE.Mesh);
       lights.forEach(light=>{light.layers.set(1);sculpture.add(light);if(light instanceof THREE.DirectionalLight){sculpture.add(light.target);light.target.position.set(0,0,0);}});
       renderer.shadowMap.needsUpdate=true;
     },
@@ -304,6 +326,13 @@ export function createArchitecturalStudio(renderer: THREE.WebGLRenderer, root: H
       }
       const pose=controls.update(frame.dt);
       const motionStep = Math.min(frame.dt,.04);
+      const lightingFollow = 1 - Math.exp(-motionStep * 2.8);
+      const mood = lighting[pose.mood];
+      for (const property of ["ambient", "sun", "practical", "warmth"] as const) lightingState[property] += (mood[property] - lightingState[property]) * lightingFollow;
+      roomAmbient.intensity = 2 * lightingState.ambient;
+      sunlight.intensity = (dark ? .65 : .85) * lightingState.sun;
+      sunlight.color.lerp(lightTarget.setHex(mood.color), lightingFollow);
+      sculpture.scale.setScalar(.0148 * (1 - pose.pressed * .025));
       const drifting = !pose.interacting && root.dataset.overlay !== 'true';
       idleMotion += ((drifting ? 1 : 0) - idleMotion) * (1 - Math.exp(-motionStep * 2));
       driftPhase += motionStep * .24 * idleMotion;
@@ -331,6 +360,15 @@ export function createArchitecturalStudio(renderer: THREE.WebGLRenderer, root: H
       loungeLight.intensity=9+Math.sin(frame.time*.65)*.7;
       screen.emissiveIntensity=.35+Math.sin(frame.time*1.2)*.07;
       glow.intensity=12+Math.sin(frame.time*.7)*.6;
+      practicalLights.forEach(({ light, base, color }) => {
+        const animated = light === windowLight || light === loungeLight || light === glow;
+        light.intensity = (animated ? light.intensity : base) * lightingState.practical;
+        light.color.copy(color).lerp(warmTarget, lightingState.warmth);
+      });
+      daylightMaterial.uniforms.strength.value *= lightingState.sun;
+      lightSlot.color.setHex(0xffe9bc).lerp(warmTarget, lightingState.warmth);
+      const lightState = [lightingState.ambient, lightingState.sun, lightingState.practical].map(value => value.toFixed(2)).join(",");
+      if (controlSurface && lightState !== lightingSignature) { lightingSignature = lightState; controlSurface.dataset.lighting = lightState; }
       pendants.forEach((item,i)=>{item.position.x=pendantPositions[i]+Math.sin(frame.time*.35+i)*.035;});
       dust.position.y=Math.sin(frame.time*.16)*.2;dust.rotation.y=Math.sin(frame.time*.1)*.012;
       // A slow camera orbit adds visible depth without changing the brand view.
@@ -357,6 +395,6 @@ export function createArchitecturalStudio(renderer: THREE.WebGLRenderer, root: H
       renderer.render(quietScene,quietCamera);
       renderer.clearDepth();if(showLogo && root.dataset.logoFlight!=='true')renderer.render(scene,logoCamera);
     },
-    dispose() { controls.dispose();daylightMaterial.dispose();geometries.forEach(geometry => geometry.dispose()); materials.forEach(material => material.dispose());quietGeometry.dispose();quietMaterial.dispose();quietScene.clear();screenInk.dispose();dustMaterial.dispose();lightSlot.dispose();sunlight.shadow.dispose();scene.clear(); },
+    dispose() { controls.dispose();if(controlSurface)delete controlSurface.dataset.lighting;logoMeshes=[];daylightMaterial.dispose();geometries.forEach(geometry => geometry.dispose()); materials.forEach(material => material.dispose());quietGeometry.dispose();quietMaterial.dispose();quietScene.clear();screenInk.dispose();dustMaterial.dispose();lightSlot.dispose();sunlight.shadow.dispose();scene.clear(); },
   };
 }

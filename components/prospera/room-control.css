@@ -1,0 +1,10 @@
+/* The existing sculpture is the control surface; only its affordance is new. */
+.p-room-control-hint{position:absolute;left:50%;bottom:0;transform:translate(-50%,8px);display:flex;flex-direction:column;gap:4px;width:max-content;max-width:95%;text-align:center;font:10px/1.5 Arial,sans-serif;color:var(--muted);letter-spacing:.025em;opacity:0;transition:opacity .45s,transform .45s;pointer-events:none}
+.p-room-control-hint>span:first-child{color:var(--gold);font-size:9px;letter-spacing:.13em;text-transform:uppercase}
+.p-room-interaction:hover .p-room-control-hint,.p-room-interaction:focus-visible .p-room-control-hint,.p-room-interaction[data-dragging=true] .p-room-control-hint{opacity:.85;transform:translate(-50%,0)}
+.p-room-interaction[data-logo-hover=true]{cursor:pointer}
+.p-room-interaction[data-dragging=true]{cursor:grabbing}
+@media(hover:none){.p-room-control-hint{opacity:.75;transform:translate(-50%,0);font-size:9px}}
+@media(max-height:700px){.p-room-control-hint>span:last-child{display:none}}
+.prospera[data-reduced=true] .p-room-control-hint{display:none}
+@media(prefers-reduced-motion:reduce){.p-room-control-hint{display:none;transition:none}}
