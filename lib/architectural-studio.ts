@@ -304,7 +304,15 @@ export function createArchitecturalStudio(renderer: THREE.WebGLRenderer, root: H
         logoCamera.copy(camera);
         logoCamera.layers.set(1);
         logoCamera.position.copy(home);
-        if(compact)logoCamera.position.z+=distance*.22;
+        if(compact){
+          // A small, centred control object leaves the mobile room in view.
+          const retreat=distance*.45;
+          logoCamera.position.z+=retreat;
+          logoCamera.position.y+=retreat*.1;
+          const logoCenter=art.height<240?.52:.58;
+          logoCamera.setViewOffset(width,height,width/2-(art.x+art.width*.5),height/2-(art.y+art.height*logoCenter),width,height);
+          logoCamera.updateProjectionMatrix();
+        }
         logoCamera.rotation.set(-Math.atan(.1),0,0,"YXZ");
         logoCamera.updateMatrixWorld();
         // Wide architectural framing is independent of the logo's close framing.

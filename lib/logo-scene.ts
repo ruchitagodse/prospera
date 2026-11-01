@@ -56,20 +56,20 @@ export function createScene(root: HTMLElement) {
     void main(){vec3 p=position+aOffset;float born=smoothstep(aSeed.y,aSeed.y+1.,uAge);float lift=smoothstep(1.,35.,length(aOffset));
     p+=vec3(sin(aSeed.x*70.)*35.,-25.,30.)*(1.-born);
     float breath=pow(.5+.5*sin(uTime*.48),3.);
-    p+=born*vec3(sin(uTime*.65+position.y*.026+aSeed.x*50.),cos(uTime*.52+position.x*.024+aSeed.x*63.),sin(uTime*.6+aSeed.x*40.))*(3.+breath*9.);
+    p+=born*vec3(sin(uTime*.65+position.y*.026+aSeed.x*50.),cos(uTime*.52+position.x*.024+aSeed.x*63.),sin(uTime*.6+aSeed.x*40.))*(.5+breath*1.4);
     float dist=length(position.xy-uTouch.xy);
     float touch=exp(-dist*dist/15000.)*uTouchStrength*born;
     float ripple=sin(dist*.035-uTime*3.);
-    p.xy+=normalize(position.xy-uTouch.xy+vec2(.01))*touch*(12.+ripple*14.);
-    p.z+=touch*(18.+ripple*12.);
+    p.xy+=normalize(position.xy-uTouch.xy+vec2(.01))*touch*(2.+ripple*3.);
+    p.z+=touch*(5.+ripple*3.);
     float wave=sin(position.y*.035-uTime*1.1+position.x*.014);
-    float glint=pow(.5+.5*sin(uTime*1.8+aSeed.x*100.),7.);
+    float glint=pow(.5+.5*sin(uTime*1.4+aSeed.x*100.),12.);
     float sweep=clamp((position.x+155.)/315.,0.,1.);
     float finish=smoothstep(sweep*.65,sweep*.65+.35,uFinish);
     p+=vec3(sin(aSeed.x*90.)*14.,cos(aSeed.x*75.)*14.,22.)*(1.-finish);
-    vGlint=glint;vAlpha=born*finish*(.38+.4*glint+.16*wave+lift*.2);
-    gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.);gl_PointSize=(1.1+aSeed.x*2.+glint*1.2+lift)*uPixelRatio;}`,
-    fragmentShader:`uniform float uOpacity;varying float vAlpha;varying float vGlint;void main(){float d=length(gl_PointCoord-.5)*2.;float a=1.-smoothstep(.12,1.,d);vec3 color=mix(vec3(.72,.48,.16),vec3(1.,.94,.72),vGlint);gl_FragColor=vec4(color,a*vAlpha*uOpacity);}`});
+    vGlint=glint;vAlpha=born*finish*(.16+.64*glint+.06*wave+lift*.05);
+    gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.);gl_PointSize=(.8+aSeed.x*.75+glint*1.1)*uPixelRatio;}`,
+    fragmentShader:`uniform float uOpacity;varying float vAlpha;varying float vGlint;void main(){float d=length(gl_PointCoord-.5)*2.;float a=1.-smoothstep(.18,.78,d);vec3 color=mix(vec3(.86,.65,.28),vec3(1.,.98,.84),vGlint);gl_FragColor=vec4(color,a*vAlpha*uOpacity);}`});
   const logoParticles = new THREE.Points(geometry,material);
   logo.add(logoParticles);
   let lost=false,started:number|null=null,heroStarted:number|null=null,bufferWidth=0,bufferHeight=0,layoutSignature="";
@@ -160,10 +160,10 @@ export function createScene(root: HTMLElement) {
         // particle to its original surface location when the pointer passes.
         const phase=(surface[i]+surface[i+1])*.018-frame.time*1.8;
         const curlX=Math.cos(phase)*70,curlY=Math.sin(phase)*70;
-        velocities[i]+=(influence*(pointerVelocity.x*5+curlX*3)-offsets[i]*13-velocities[i]*5)*dt;
-        velocities[i+1]+=(influence*(pointerVelocity.y*5+curlY*3)-offsets[i+1]*13-velocities[i+1]*5)*dt;
-        velocities[i+2]+=(influence*160-offsets[i+2]*13-velocities[i+2]*5)*dt;
-        for(let axis=0;axis<3;axis++)offsets[i+axis]=THREE.MathUtils.clamp(offsets[i+axis]+velocities[i+axis]*dt,-90,90);
+        velocities[i]+=(influence*(pointerVelocity.x*1.2+curlX*.6)-offsets[i]*24-velocities[i]*8)*dt;
+        velocities[i+1]+=(influence*(pointerVelocity.y*1.2+curlY*.6)-offsets[i+1]*24-velocities[i+1]*8)*dt;
+        velocities[i+2]+=(influence*32-offsets[i+2]*24-velocities[i+2]*8)*dt;
+        for(let axis=0;axis<3;axis++)offsets[i+axis]=THREE.MathUtils.clamp(offsets[i+axis]+velocities[i+axis]*dt,-14,14);
       }
       offsetAttribute.needsUpdate=true;
       key.position.x=complete?-180:-180+frame.x*220;
