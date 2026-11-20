@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-img-element -- Local SVG previews are shared with WebGL textures and animated image overlays. */
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { syncPageMetadata } from "@/lib/sync-page-metadata";
 import { flushSync } from "react-dom";
 import gsap from "gsap";
 import { inCategory, ownershipLabel, workAsset, workCategories, workProjects, type WorkCategory, type WorkProject } from "@/content/work";
@@ -47,7 +48,7 @@ export function WorkExperience({ active, reduced, initialProject = null }: { act
         gsap.to(wash,{opacity:0,duration:1,ease:"power2.inOut",onComplete:()=>{wash.remove();flights.current=flights.current.filter(value=>value!==wash);}});
       }
       flushSync(()=>setSlug(project.slug));
-      history.pushState(null,"",`/work/${project.slug}`);window.scrollTo({top:0,behavior:"instant"});
+      history.pushState(null,"",`/work/${project.slug}`);syncPageMetadata();window.scrollTo({top:0,behavior:"instant"});
       const cover=element.querySelector<HTMLElement>(".p-case-cover")!,to=cover.getBoundingClientRect();
       cover.style.visibility="hidden";
       const from=rect??{left:innerWidth*.36,top:innerHeight*.22,width:innerWidth*.28,height:innerHeight*.45};
@@ -64,7 +65,7 @@ export function WorkExperience({ active, reduced, initialProject = null }: { act
   },[restoreSelection]);
   useLayoutEffect(()=>{
     const parent=root.current?.closest<HTMLElement>(".p-page-stage");if(parent)parent.dataset.workView=selected?"project":"gallery";
-    if(active)document.title=selected?`${selected.title} | PROSPERA`:"Work | PROSPERA";
+    if(active)syncPageMetadata();
   },[selected,active]);
   useEffect(()=>{
     if(!stage.current||reduced||!active||!filtered.length)return;
@@ -88,7 +89,7 @@ export function WorkExperience({ active, reduced, initialProject = null }: { act
     let flight:HTMLImageElement|null=null;
     if(from&&selected){flight=document.createElement("img");flight.src=workAsset(selected.slug);flight.alt="";flight.className="p-work-flight";Object.assign(flight.style,{left:`${from.left}px`,top:`${from.top}px`,width:`${from.width}px`,height:`${from.height}px`});document.body.append(flight);flights.current.push(flight);}
     if(selected)restoreSelection(selected.slug);
-    flushSync(()=>setSlug(null));history.pushState(null,"","/work");
+    flushSync(()=>setSlug(null));history.pushState(null,"","/work");syncPageMetadata();
     const target=lastCard.current??{left:innerWidth*.4,top:innerHeight*.25,width:innerWidth*.2,height:innerHeight*.4};
     const finish=()=>{busy.current=false;root.current?.querySelector<HTMLElement>(".p-work-caption>a")?.focus({preventScroll:true});};
     if(flight)gsap.to(flight,{...target,duration:reduced?0:.9,ease:"power3.inOut",onComplete:()=>{flight?.remove();flights.current=flights.current.filter(value=>value!==flight);finish();}});else finish();

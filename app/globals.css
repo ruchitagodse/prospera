@@ -8,3 +8,5 @@ html[data-reduced="true"] { scroll-behavior: auto; }
 body { min-width: 320px; margin: 0; background: var(--background); color: var(--foreground); font-family: Arial, Helvetica, sans-serif; }
 button, a { -webkit-tap-highlight-color: transparent; }
 ::selection { background: #b38a4b; color: #111; }
+.p-website-visits { display: inline-flex; align-items: baseline; gap: .4em; white-space: nowrap; }
+.p-website-visits > span { font-variant-numeric: tabular-nums; }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { createPageMetadata } from "@/lib/seo";
 import { notFound } from "next/navigation";
 import ExperienceShell from "@/components/prospera/experience-shell";
 import { workProjects } from "@/content/work";
@@ -11,7 +12,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const project = workProjects.find(project => project.slug === slug);
   if (!project) notFound();
-  return { title: `${project.title} | PROSPERA`, description: project.description };
+  return createPageMetadata(`/work/${slug}`);
 }
 
 export default async function ProjectPage({ params }: { params: Promise<{ slug: string }> }) {

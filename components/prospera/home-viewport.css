@@ -1,5 +1,6 @@
 /* The homepage is a single composition; other pages keep their scroll layouts. */
 .p-mobile-heading-break{display:none}
+.prospera .p-hero-bottom>.p-website-visits{display:inline-flex;font-size:10px;letter-spacing:0}
 .p-page-stage[data-page=home]{--home-header:100px;height:100svh;display:flex;flex-direction:column}
 .p-page-stage[data-page=home]>.p-header{height:var(--home-header);flex:0 0 var(--home-header)}
 .p-page-stage[data-page=home]>main{display:flex;flex:1;min-height:0;flex-direction:column}

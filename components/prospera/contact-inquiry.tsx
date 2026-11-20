@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useId, useRef, useState } from "react";
 import { contactScopes as scopes } from "@/content/contact";
+import { WebsiteVisits } from "./website-visits";
 
 function SocialIcon({ type }: { type: "instagram" | "whatsapp" | "email" }) {
   if (type === "instagram") return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.8" r=".8" className="p-social-dot"/></svg>;
@@ -99,7 +100,8 @@ export function ContactInquiry() {
         <button className="p-inquiry-submit" type="submit" disabled={sending}>{sending ? "Sending…" : "Start the conversation"} <span>↗</span></button>
       </div>
     </form>}
-    <div className="p-footer-bottom"><span>PROSPERA</span><span>Made with care in Mumbai.</span><button type="button" onClick={()=>sheet.current?.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})}>Back to top ↑</button></div>
+    <div className="p-inquiry-legal"><p>We use your details to respond to your inquiry. Read our <a href="/privacy-policy">Privacy Policy</a> and <a href="/terms-of-service">Terms of Service</a>.</p></div>
+    <div className="p-footer-bottom"><span>PROSPERA</span><span>Made with care in Mumbai.</span><WebsiteVisits/><button type="button" onClick={()=>sheet.current?.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})}>Back to top ↑</button></div>
     </div>
   </section>;
 }
