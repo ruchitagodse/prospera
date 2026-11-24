@@ -69,8 +69,22 @@ export function ContactInquiry() {
       <h1 id="contact-title">Let’s Build Something That Moves Your Business <em>Forward.</em></h1>
       <div className="p-inquiry-aside">
         <p>Tell us about your project and we’ll get in touch.</p>
-        <p className="p-inquiry-response">We aim to reply within 24 hours.</p>
-        <a className="p-whatsapp-cta" href="https://wa.me/919372321663?text=Hello%20PROSPERA%2C%20I%27d%20like%20to%20discuss%20a%20project." target="_blank" rel="noreferrer">Let’s chat on WhatsApp <span>↗</span></a>
+        <p className="p-inquiry-response">We aim to reply within 24 hours.</p>me 
+        
+<a
+  className="p-whatsapp-cta"
+  href="https://wa.me/919372321663?text=Hello%20PROSPERA%2C%20I%27d%20like%20to%20discuss%20a%20project."
+  target="_blank"
+  rel="noreferrer"
+  onClick={() => {
+    if (typeof window.fbq === "function") {
+      window.fbq("track", "Lead");
+    }
+  }}
+>
+  Let’s chat on WhatsApp <span>↗</span>
+</a>
+
         <div className="p-inquiry-direct"><span>Or reach us directly</span><div>
           <a href="https://www.instagram.com/prospera____/" target="_blank" rel="noreferrer" aria-label="Instagram: @prospera____" title="@prospera____"><SocialIcon type="instagram"/></a>
           <a href="https://wa.me/919372321663" target="_blank" rel="noreferrer" aria-label="Contact PROSPERA on WhatsApp"><SocialIcon type="whatsapp"/></a>
